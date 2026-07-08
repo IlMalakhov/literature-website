@@ -1,0 +1,222 @@
+/* Content + booking link for the «Тёмный кабинет» page. */
+
+/* --- Booking action: open Telegram chat with a pre-filled message --------
+   Telegram only pre-fills the "?text=" draft for USERNAME links
+   (https://t.me/<username>?text=…). Phone-number links just open the chat and
+   ignore the text param — so the username is what enables the prefill; the
+   phone number is a fallback only. Docs: https://core.telegram.org/api/links */
+const TG_USERNAME = "dashavrodeda"; // no @. Username link is what enables prefill.
+const TG_PHONE = "79215791929"; // fallback only — Telegram won't prefill text here
+
+export const TG_HANDLE = `@${TG_USERNAME}`;
+
+/* The draft message: three personal gaps, filled in the CTA composer.
+   Empty gaps fall back to «…» so the message stays valid untouched. */
+export type TgDraft = { grade: string; prep: string; time: string };
+
+/* NB: field is deliberately not named `key` — that would be swallowed by
+   React when a gap config is spread into JSX props */
+export const TG_GAPS: ReadonlyArray<{
+  field: keyof TgDraft; label: string; placeholder: string;
+}> = [
+  { field: "grade", label: "Класс", placeholder: "11" },
+  { field: "prep", label: "Что читаете или как готовитесь", placeholder: "перечитываю «Онегина»" },
+  { field: "time", label: "Удобное время для занятий", placeholder: "вечером после 18:00" },
+];
+
+export const buildTgMessage = (d?: Partial<TgDraft>) => {
+  const v = (s?: string) => (s ?? "").trim() || "…";
+  return (
+    "Здравствуйте, Дарья! Хочу записаться на бесплатное диагностическое " +
+    `занятие по литературе (подготовка к ЕГЭ). Немного о себе: класс — ${v(d?.grade)}, ` +
+    `сейчас читаю/готовлюсь — ${v(d?.prep)}, удобное время для занятий (примерно) — ${v(d?.time)}.`
+  );
+};
+
+export const tgUrl = (text: string) =>
+  TG_USERNAME
+    ? `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(text)}`
+    : `https://t.me/+${TG_PHONE}`;
+
+export const TG_URL = tgUrl(buildTgMessage());
+
+export const BADGE_TEXT =
+  "ПОДГОТОВКА К ЕГЭ · ЛИТЕРАТУРА · ЗАПИСЬ НА ДИАГНОСТИКУ · ";
+
+/* --- The codifier library: one still-life per work, /works/<slug>.webp ---- */
+export type Work = {
+  slug: string;
+  title: string;
+  author: string;
+  year: string;
+};
+
+export const WORKS: ReadonlyArray<Work> = [
+  { slug: "woe-from-wit", title: "Горе от ума", author: "А. С. Грибоедов", year: "1825" },
+  { slug: "eugene-onegin", title: "Евгений Онегин", author: "А. С. Пушкин", year: "1831" },
+  { slug: "the-queen-of-spades", title: "Пиковая дама", author: "А. С. Пушкин", year: "1834" },
+  { slug: "the-captains-daughter", title: "Капитанская дочка", author: "А. С. Пушкин", year: "1836" },
+  { slug: "mtsyri", title: "Мцыри", author: "М. Ю. Лермонтов", year: "1840" },
+  { slug: "a-hero-of-our-time", title: "Герой нашего времени", author: "М. Ю. Лермонтов", year: "1840" },
+  { slug: "the-overcoat", title: "Шинель", author: "Н. В. Гоголь", year: "1842" },
+  { slug: "dead-souls", title: "Мёртвые души", author: "Н. В. Гоголь", year: "1842" },
+  { slug: "white-nights", title: "Белые ночи", author: "Ф. М. Достоевский", year: "1848" },
+  { slug: "oblomov", title: "Обломов", author: "И. А. Гончаров", year: "1859" },
+  { slug: "the-storm", title: "Гроза", author: "А. Н. Островский", year: "1859" },
+  { slug: "fathers-and-sons", title: "Отцы и дети", author: "И. С. Тургенев", year: "1862" },
+  { slug: "crime-and-punishment", title: "Преступление и наказание", author: "Ф. М. Достоевский", year: "1866" },
+  { slug: "war-and-peace", title: "Война и мир", author: "Л. Н. Толстой", year: "1869" },
+  { slug: "the-seagull", title: "Чайка", author: "А. П. Чехов", year: "1896" },
+  { slug: "the-cherry-orchard", title: "Вишнёвый сад", author: "А. П. Чехов", year: "1904" },
+  { slug: "the-garnet-bracelet", title: "Гранатовый браслет", author: "А. И. Куприн", year: "1911" },
+  { slug: "master-and-margarita", title: "Мастер и Маргарита", author: "М. А. Булгаков", year: "1940" },
+];
+
+export const workSrc = (slug: string) => `/works/${slug}.webp`;
+
+export const MARQUEE: ReadonlyArray<string> = WORKS.map((w) => `«${w.title}»`);
+
+export const MARQUEE_TAGS: ReadonlyArray<string> = [
+  "ЕГЭ 2027", "анализ текста", "сочинение", "критерии ФИПИ", "пробники",
+  "теория литературы", "банк аргументов", "бюджет",
+];
+
+/* value is animated (count-up); prefix/suffix render as static glyphs */
+export const STATS: ReadonlyArray<{
+  value: number; prefix?: string; suffix?: string; label: string;
+}> = [
+  { value: 84, label: "средний балл учеников на ЕГЭ-2025" },
+  { value: 150, suffix: "+", label: "учеников за девять лет" },
+  { value: 92, suffix: "%", label: "поступили на бюджет" },
+  { value: 34, prefix: "+", label: "прирост балла за учебный год" },
+];
+
+export const QUOTES: ReadonlyArray<{
+  text: string; who: string; role: string; score: string;
+}> = [
+  {
+    text: "Пришла с 58 баллами на сентябрьском пробнике. Дарья за год разложила всё по полочкам — особенно сочинение. Сдала на 91.",
+    who: "Марина", role: "поступила на филфак", score: "91",
+  },
+  {
+    text: "Сын не любил литературу и боялся сочинения. Здесь научили писать по критериям, а не угадывать. Итог — 88 и бюджет.",
+    who: "Ольга", role: "мама ученика", score: "88",
+  },
+  {
+    text: "Ценно, что всё честно: каждый пробник по реальным критериям, без завышенных оценок. Поэтому 89 на ЕГЭ не стали сюрпризом.",
+    who: "Артём", role: "поступил в ВШЭ", score: "89",
+  },
+];
+
+/* --- «Разбор сочинения»: margin notes keyed to marked spans in the paper --- */
+export const ESSAY_NOTES: ReadonlyArray<{
+  n: number; crit: string; title: string; text: string;
+}> = [
+  {
+    n: 1, crit: "К2 · опора на текст", title: "Мотив упрощён",
+    text: "Не бедность, а теория: «тварь ли я дрожащая или право имею». Без этой формулы аргумент рассыпается.",
+  },
+  {
+    n: 2, crit: "К1 · тезис", title: "Пересказ вместо анализа",
+    text: "«Много пишет» — это наблюдение, а не тезис. Формулируем: страдание у Достоевского — работа совести, а не наказание извне.",
+  },
+  {
+    n: 3, crit: "К3 · аргументация", title: "Нет эпизода",
+    text: "Признание — не финал: эпилог, Евангелие, Соня. Аргумент без конкретного эпизода эксперт не засчитает.",
+  },
+];
+
+/* --- «Маршрут года»: September → June, one step at a time ---------------- */
+export const ROAD_STEPS: ReadonlyArray<{
+  when: string; title: string; text: string;
+}> = [
+  {
+    when: "Сентябрь", title: "Диагностика",
+    text: "Стартовый срез и личная карта пробелов. Честный ответ, какой балл реален к июню.",
+  },
+  {
+    when: "Октябрь — декабрь", title: "Кодификатор и теория",
+    text: "Эпос, лирика, драма: читаем, разбираем, учимся отвечать коротко и точно — вся первая часть экзамена.",
+  },
+  {
+    when: "Январь", title: "Рубежный пробник",
+    text: "Первый полный ЕГЭ в реальных условиях: бланки, таймер, проверка по критериям. Видим прогресс в цифрах.",
+  },
+  {
+    when: "Февраль — апрель", title: "Сочинение каждую неделю",
+    text: "Банк аргументов растёт, структура доведена до автоматизма. Каждая работа возвращается с разметкой эксперта.",
+  },
+  {
+    when: "Май", title: "Стратегия экзамена",
+    text: "Тайминг, бланки, повторение слабых мест. Прогоняем сценарий экзамена, пока он не станет рутиной.",
+  },
+  {
+    when: "Июнь", title: "Экзамен",
+    text: "Выходим на предсказуемый результат: средний балл моих учеников — 84.",
+  },
+];
+
+/* --- FAQ: the questions parents and students actually ask before booking -- */
+export const FAQ_STUDENT: ReadonlyArray<{ q: string; a: string }> = [
+  {
+    q: "С какого уровня можно начинать?",
+    a: "С любого. Диагностика покажет реальную точку старта — дальше программа строится под неё. Приходили и с «прочитал два романа из школьной программы», уходили с 80+.",
+  },
+  {
+    q: "Будет ли скучно?",
+    a: "Точно нет. Никаких лекций под диктовку и унылой зубрёжки. Мы разбираем классику через исторический контекст, живые дискуссии и понятные параллели с современностью. Литература оживёт, обещаю.",
+  },
+  {
+    q: "Успеем ли за один учебный год?",
+    a: "Да — программа рассчитана ровно на год, от кодификатора до стратегии экзамена. Чем раньше старт осенью, тем спокойнее темп: без гонки в мае.",
+  },
+  {
+    q: "Много ли будет домашки?",
+    a: "Достаточно, чтобы набить руку, но без выгорания. В основном это чтение и написание сочинений. Каждую работу я подробно разбираю по критериям, чтобы вы видели свои ошибки и росли в баллах.",
+  },
+  {
+    q: "А если сдаю ещё и русский?",
+    a: "Это только в плюс: анализ текста и банк аргументов работают на итоговое сочинение и сочинение по русскому. Многие ученики отмечают рост по обоим предметам.",
+  },
+];
+
+export const FAQ_PARENT: ReadonlyArray<{ q: string; a: string }> = [
+  {
+    q: "Как проходят занятия и контролируется прогресс?",
+    a: "Онлайн, 60–90 минут, один на один. Используем интерактивную доску, все конспекты остаются у ученика. Прогресс контролируем через регулярные пробники в реальных условиях ЕГЭ, а результаты и динамику я регулярно отправляю родителям.",
+  },
+  {
+    q: "Успеем ли за один учебный год?",
+    a: "Да, программа рассчитана ровно на один учебный год. Мы успеем пройти все 18 произведений кодификатора, разобрать теорию и написать все типы сочинений без спешки.",
+  },
+  {
+    q: "Сколько сочинений мы напишем и как они проверяются?",
+    a: "Более 20 сочинений за курс. Каждое я лично проверяю строго по критериям ФИПИ, детально размечаю, где теряются баллы, и возвращаю с разбором в течение 48 часов.",
+  },
+  {
+    q: "А если сдаём ещё и русский?",
+    a: "Подготовка к литературе сильно помогает с русским языком: навык анализа текста и богатый банк аргументов облегчают написание сочинения ЕГЭ по русскому и итогового сочинения в декабре.",
+  },
+  {
+    q: "Сколько это стоит?",
+    a: "Стоимость зависит от формата и интенсивности — озвучу на бесплатной диагностике вместе с планом. Никаких обязательств: сначала польза, потом решение.",
+  },
+];
+
+
+/* Parade choreography: [figure, message, enter-duration, exit-duration].
+   Pixel-sprite cast, one pass each per loop: the carriage rolls, Onegin
+   struts, Raskolnikov hurries, Oblomov shuffles, Katerina glides,
+   Behemoth swaggers. */
+export type FigureKey =
+  | "carriage" | "onegin" | "rask" | "oblomov" | "katerina" | "behemoth";
+export const SEGMENTS: ReadonlyArray<
+  readonly [FigureKey, string, number, number]
+> = [
+  ["carriage", "Средний балл учеников — 84", 1.5, 1.4],
+  ["onegin", "Разбор сочинений по критериям ФИПИ", 2.2, 2.0],
+  ["rask", "Пробники в реальных условиях ЕГЭ", 1.1, 1.0],
+  ["oblomov", "Первое занятие — бесплатная диагностика", 3.0, 2.8],
+  ["katerina", "150+ учеников за 9 лет", 2.6, 2.4],
+  ["behemoth", "92% поступают на бюджет", 2.4, 2.2],
+];
