@@ -18,8 +18,11 @@ export function Faq() {
   return (
     <section className="faq section-pad" id="faq">
       <div className="wrap">
-        <div className="sec-head reveal faq__head">
+        <div className="sec-head reveal">
           <h2>Спросите — <em>отвечу</em></h2>
+        </div>
+
+        <div className="faq__toggle-row">
           <div className="faq__toggle-wrapper">
             <div className="faq__toggle">
               <button

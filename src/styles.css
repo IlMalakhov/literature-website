@@ -1,5 +1,5 @@
 /* =========================================================================
-   Дарья Соколова — репетитор по литературе · ЕГЭ
+   Дарья Федорова — репетитор по литературе · ЕГЭ
    «Тёмный кабинет», вторая редакция: Oranienbaum display + Unbounded labels,
    rose accent, free-floating imagery, scroll-driven depth.
    ========================================================================= */
@@ -1122,23 +1122,19 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ---------- FAQ: objections, answered ---------- */
-.faq__head {
+.faq__toggle-row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 2rem;
+  justify-content: flex-end;
+  max-width: 900px;
+  margin-bottom: 2rem;
 }
-@media (max-width: 768px) {
-  .faq__head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
+@media (max-width: 620px) {
+  .faq__toggle-row {
+    justify-content: flex-start;
   }
 }
 .faq__toggle-wrapper {
   display: inline-block;
-  margin-bottom: 0.5rem;
 }
 .faq__toggle {
   position: relative;

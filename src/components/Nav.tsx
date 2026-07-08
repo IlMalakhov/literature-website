@@ -15,7 +15,7 @@ export function Nav() {
     <nav className={`nav${scrolled ? " scrolled" : ""}`}>
       <div className="wrap nav__inner">
         <a className="brand" href="#top">
-          Дарья Соколова
+          Дарья Федорова
           <small>Литература · ЕГЭ</small>
         </a>
         <a className="nav__cta" href={TG_URL} target="_blank" rel="noopener">

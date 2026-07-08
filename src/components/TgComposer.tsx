@@ -78,7 +78,7 @@ export function TgComposer() {
       <div className="tgc__head">
         <span className="tgc__ava" aria-hidden="true">Д</span>
         <span className="tgc__who">
-          <b>Дарья Соколова</b>
+          <b>Дарья Федорова</b>
           <small>{TG_HANDLE} · Telegram</small>
         </span>
       </div>

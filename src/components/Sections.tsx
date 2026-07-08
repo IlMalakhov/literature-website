@@ -162,7 +162,7 @@ export function About() {
           </div>
           <div className="about__body reveal">
             <p>
-              Я <strong>Дарья Соколова</strong> — преподаю литературу девять лет
+              Я <strong>Дарья Федорова</strong> — преподаю литературу девять лет
               и готовлю школьников к ЕГЭ. Окончила филологический факультет,
               работала в проверке экзаменационных работ, поэтому знаю критерии
               изнутри — не по пересказам, а по практике.
@@ -245,7 +245,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="wrap footer__inner">
-        <span className="footer__name">Дарья Соколова</span>
+        <span className="footer__name">Дарья Федорова</span>
         <a href={TG_URL} target="_blank" rel="noopener">
           Telegram · @dashavrodeda
         </a>
