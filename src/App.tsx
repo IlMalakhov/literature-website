@@ -22,12 +22,64 @@ export function App() {
      scroll position never disagree. Skipped for reduced motion. */
   useLayoutEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ lerp: 0.115, anchors: true });
+    const lenis = new Lenis({ lerp: 0.115 });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (t: number) => lenis.raf(t * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
+
+    // Anchor scrolling, handled here instead of by Lenis's built-in anchors so
+    // #program can target something Lenis can't express: the Program section
+    // pins its panel viewport and scrolls it horizontally, so "the top of the
+    // section" is NOT where horizontal scrolling begins. That point is the pin's
+    // ScrollTrigger.start — the single source of truth — so we jump straight to
+    // it. Everything else clears the sticky nav via scroll-padding-top, so the
+    // pin (which uses the same value) and these jumps can never drift apart, on
+    // any screen size. Without this, a direct load of /#program does a native
+    // hash jump to the section top and lands short of / past the pin.
+    const pad =
+      parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 90;
+    // Always resolve to an absolute pixel target: the pin's start when jumping to
+    // #program, otherwise the element's top minus the nav clearance. A concrete
+    // number avoids Lenis re-resolving an element mid-load (which lands short).
+    const destination = (id: string): number | null => {
+      const st = ScrollTrigger.getById("program-h");
+      if (id === "program" && st) return st.start;
+      const el = document.getElementById(id);
+      if (!el) return null;
+      return el.getBoundingClientRect().top + window.scrollY - pad;
+    };
+    const goTo = (id: string, immediate = false) => {
+      const target = destination(id);
+      if (target == null) return;
+      lenis.scrollTo(Math.max(0, target), { immediate });
+    };
+
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest('a[href^="#"]');
+      const href = link?.getAttribute("href");
+      if (!href || href === "#") return;
+      const id = href.slice(1);
+      if (!document.getElementById(id)) return;
+      e.preventDefault();
+      history.pushState(null, "", href);
+      goTo(id);
+    };
+    document.addEventListener("click", onClick);
+
+    // ScrollTrigger.start is only trustworthy after layout settles; refresh once
+    // fonts land, then honor any hash the page was loaded with (the URL the user
+    // actually opens is /#program) by snapping to the now-correct start.
+    const settle = () => {
+      ScrollTrigger.refresh();
+      const id = location.hash.slice(1);
+      if (id) goTo(id, true);
+    };
+    if (document.fonts?.ready) document.fonts.ready.then(settle);
+    else window.addEventListener("load", settle);
+
     return () => {
+      document.removeEventListener("click", onClick);
       gsap.ticker.remove(tick);
       lenis.destroy();
     };

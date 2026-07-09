@@ -26,7 +26,9 @@ export function Roadmap() {
             trigger: section.querySelector(".road__body"),
             start: "top 72%",
             end: "bottom 62%",
-            scrub: 0.6,
+            // scrub:true (not a number) — Lenis already smooths the scroll, so a
+            // numeric scrub would add a second easing layer that fights it.
+            scrub: true,
           },
         });
       }

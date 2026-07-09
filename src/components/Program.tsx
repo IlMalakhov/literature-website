@@ -69,15 +69,28 @@ export function Program() {
       const track = section.querySelector<HTMLElement>(".hp__track")!;
       const bar = section.querySelector<HTMLElement>(".hp__bar i")!;
       const dist = () => track.scrollWidth - view.clientWidth;
+      // Single source for the nav clearance — the same value the anchor jump in
+      // App.tsx uses — so the pin and the jump can never drift apart.
+      const pad = () =>
+        parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 90;
 
       gsap.to(track, {
         x: () => -dist(),
         ease: "none",
         scrollTrigger: {
-          trigger: section,
-          start: "top top",
+          // Pin the panel viewport (not the whole section): the section's heading
+          // + top padding make it taller than the screen, so pinning the section
+          // pushed the view's bottom progress bar off-screen. Pinned `pad` below
+          // the top (clearing the sticky nav), the view fills the rest of the
+          // viewport height (see .hp__view), so its bar sits at the bottom of the
+          // screen on any display, and the heading scrolls away above. The `id`
+          // lets App.tsx aim a #program jump at this trigger's exact `start` —
+          // the one true "horizontal scroll begins here" point.
+          id: "program-h",
+          trigger: view,
+          start: () => "top top+=" + pad(),
           end: () => "+=" + dist(),
-          pin: true,
+          pin: view,
           // Lenis already eases the scroll; a numeric scrub adds a *second*
           // easing layer on top, and the two settle against each other when the
           // pin engages — the track drifts back toward x:0 (rightward), which

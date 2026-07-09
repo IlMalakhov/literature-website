@@ -5,7 +5,8 @@ import { CURSORS } from "../cursors.gen";
 type SpriteName = keyof typeof CURSORS;
 type Zone = "quill" | "redpen" | "pixel";
 
-const INTERACTIVE = "a, button, [role='button'], summary, label, [data-mark]";
+const INTERACTIVE =
+  "a, button, [role='button'], [role='option'], summary, label, [data-mark]";
 const TEXTFIELD = "input, textarea, select";
 const ROSE = "238, 93, 120";     // --accent
 const DEEP = "165, 43, 70";      // --btn
@@ -70,8 +71,8 @@ export function Cursor() {
     const trail: { x: number; y: number; w: number; born: number }[] = [];
     const blots: { x: number; y: number; r: number; born: number }[] = [];
 
-    const xTo = gsap.quickTo(hold, "x", { duration: 0.16, ease: "power3.out" });
-    const yTo = gsap.quickTo(hold, "y", { duration: 0.16, ease: "power3.out" });
+    const xTo = gsap.quickTo(hold, "x", { duration: 0.1, ease: "power3.out" });
+    const yTo = gsap.quickTo(hold, "y", { duration: 0.1, ease: "power3.out" });
     const rotTo = gsap.quickTo(imgs.quill, "rotation", {
       duration: 0.35, ease: "power2.out",
     });

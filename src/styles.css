@@ -25,6 +25,10 @@
   --font-sans:    "Unbounded", system-ui, sans-serif;
 
   --maxw: 1280px;
+  --nav-h: 4.3rem;   /* sticky nav height — used to size the hero to one viewport */
+  --anchor-top: 90px; /* clearance below the sticky nav that anchor jumps land at;
+                         drives scroll-padding-top, the Program pin start (read in
+                         JS), and the pinned view height — keep them in lockstep */
   --pad: clamp(1.25rem, 4vw, 2.75rem);
   --shadow: 0 34px 70px -30px rgba(0, 0, 0, .85);
   --sect-pad: clamp(5rem, 11vw, 11rem);
@@ -36,7 +40,7 @@
 
 /* ---------- Reset / base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 90px; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--anchor-top); -webkit-text-size-adjust: 100%; }
 /* the top progress bar is the scroll indicator — hide the native scrollbar */
 html { scrollbar-width: none; }
 html::-webkit-scrollbar { width: 0; height: 0; display: none; }
@@ -133,7 +137,7 @@ section, header.hero { position: relative; z-index: 1; }
   transition: border-color .3s;
 }
 .nav.scrolled { border-color: var(--line); }
-.nav__inner { display: flex; align-items: baseline; justify-content: space-between; padding-block: 1.1rem; }
+.nav__inner { display: flex; align-items: baseline; justify-content: space-between; min-height: var(--nav-h); padding-block: 1.1rem; }
 .brand { font-family: var(--font-display); font-size: 1.3rem; display: flex; align-items: baseline; gap: 1rem; }
 .brand small {
   font-family: var(--font-sans); font-size: .5rem;
@@ -179,10 +183,18 @@ section, header.hero { position: relative; z-index: 1; }
 .link-under:hover { color: var(--accent); }
 
 /* ---------- Hero ---------- */
-.hero { padding-top: clamp(1.5rem, 4vw, 3rem); overflow: hidden; }
+.hero { --hero-pad: clamp(1.5rem, 4vw, 3rem); padding-top: var(--hero-pad); overflow: hidden; }
+/* The stage + foot together fill exactly one viewport below the sticky nav, so
+   the CTA and location line always land above the fold on first load; the stage
+   flexes to absorb the leftover space and the parade street follows below. */
+.hero .wrap {
+  display: flex; flex-direction: column;
+  min-height: calc(100svh - var(--nav-h) - var(--hero-pad) - 4rem);
+}
 .hero__stage {
   position: relative;
-  min-height: clamp(420px, 74vh, 800px);
+  flex: 1 1 auto;
+  min-height: clamp(360px, 46vh, 620px);
   display: flex; flex-direction: column; justify-content: center;
 }
 .hero__eyebrow {
@@ -261,7 +273,8 @@ section, header.hero { position: relative; z-index: 1; }
 .hero__fact { max-width: 24ch; line-height: 1.6; }
 .hero__coords { font-size: .5rem; letter-spacing: .3em; text-transform: uppercase; opacity: .55; margin-top: .8rem; }
 @media (max-width: 940px) {
-  .hero__stage { min-height: 0; padding-top: 3rem; }
+  .hero .wrap { display: block; min-height: 0; }
+  .hero__stage { flex: none; min-height: 0; padding-top: 3rem; }
   .hero__cat { width: min(58vw, 380px); top: -2%; opacity: .85; }
   .hero__l2 { padding-right: 4vw; }
   .hero__bloom { display: none; }
@@ -505,7 +518,7 @@ section, header.hero { position: relative; z-index: 1; }
   padding-block: .6rem;
 }
 .marquee__track { display: inline-flex; align-items: center; gap: 2.4rem; animation: marq 38s linear infinite; }
-.marquee__row--alt .marquee__track { animation: marq 26s linear infinite reverse; }
+.marquee__row--alt .marquee__track { animation: marq-alt 26s linear infinite reverse; }
 .marquee__row span { font-family: var(--font-serif); font-style: italic; font-size: 1.45rem; color: #f2c4cc; }
 .marquee__row span::after { content: "✦"; margin-left: 2.4rem; color: var(--accent); font-style: normal; font-size: .8em; }
 .marquee__row--alt span {
@@ -515,6 +528,8 @@ section, header.hero { position: relative; z-index: 1; }
 }
 .marquee__row--alt span::after { content: "·"; margin-left: 2.4rem; }
 @keyframes marq { to { transform: translateX(-50%); } }
+/* alt row triples its content, so one seamless period is one third of the track */
+@keyframes marq-alt { to { transform: translateX(calc(-100% / 3)); } }
 @media (prefers-reduced-motion: reduce) { .marquee__track { animation: none; } }
 
 /* ---------- Manifesto + stats ---------- */
@@ -571,7 +586,11 @@ section, header.hero { position: relative; z-index: 1; }
 .hp__hint span { color: var(--accent); animation: hint-x 1.6s ease-in-out infinite; }
 @keyframes hint-x { 50% { transform: translateX(9px); } }
 
-.hp__view { position: relative; height: min(76vh, 720px); overflow: hidden; }
+/* Fill from the nav clearance to the bottom of the viewport: the view is pinned
+   with its top at --anchor-top, so this puts its bottom progress bar at the
+   bottom of the screen on any height (a fixed height left the bar mid-screen on
+   tall displays). Mobile overrides this to auto for the stacked layout. */
+.hp__view { position: relative; height: calc(100svh - var(--anchor-top)); overflow: hidden; }
 .hp__track {
   display: flex; align-items: center; height: 100%;
   padding-left: var(--pad);
