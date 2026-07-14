@@ -1,8 +1,11 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MARQUEE, MARQUEE_TAGS, STATS, QUOTES, TG_URL, workSrc } from "../data";
+import {
+  MARQUEE, MARQUEE_TAGS, STATS, TG_URL, workSrc, workSrcSet,
+} from "../data";
 import { TgComposer } from "./TgComposer";
+import { QuotesScale } from "./QuotesScale";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -57,6 +60,8 @@ export function Stats() {
       <img
         className="manifest__bg"
         src={workSrc("war-and-peace")}
+        srcSet={workSrcSet("war-and-peace")}
+        sizes="(max-width: 1306px) 72vw, 940px"
         alt=""
         data-depth="0.22"
         loading="lazy"
@@ -90,6 +95,8 @@ export function Quotes() {
       <img
         className="quotes__bg"
         src={workSrc("eugene-onegin")}
+        srcSet={workSrcSet("eugene-onegin")}
+        sizes="(max-width: 1242px) 58vw, 720px"
         alt=""
         data-depth="0.16"
         loading="lazy"
@@ -101,25 +108,15 @@ export function Quotes() {
         <div className="sec-head reveal">
           <h2>Сдали — <em>и поступили</em></h2>
         </div>
-        <div className="qs">
-          {QUOTES.map((q) => (
-            <blockquote className="q reveal reveal--tilt" key={q.who}>
-              <span className="q__ghost" aria-hidden="true">{q.score}</span>
-              <p>{q.text}</p>
-              <footer>
-                <b>{q.who}</b>
-                <small>{q.role}</small>
-                <span className="q__chip">{q.score} · ЕГЭ</span>
-              </footer>
-            </blockquote>
-          ))}
+        <div className="reveal">
+          <QuotesScale />
         </div>
       </div>
     </section>
   );
 }
 
-/* laurel branch for the award plaque; mirrored for the right side */
+/* laurel branch for the award plaques; mirrored for the right side */
 function Laurel({ mirrored }: { mirrored?: boolean }) {
   return (
     <svg
@@ -141,6 +138,88 @@ function Laurel({ mirrored }: { mirrored?: boolean }) {
   );
 }
 
+/* five of these under the «5,0» on the rating plaque */
+function Star() {
+  return (
+    <svg
+      className="award__star"
+      viewBox="0 0 12 12"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M6 .6 L7.6 4.2 11.5 4.6 8.6 7.2 9.4 11 6 9 2.6 11 3.4 7.2 .5 4.6 4.4 4.2Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+/* mortarboard for the degree plaque */
+function Mortarboard() {
+  return (
+    <svg
+      className="award__cap"
+      viewBox="0 0 52 44"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path d="M26 3 L50 13.5 26 24 2 13.5Z" fill="currentColor" />
+      <path
+        d="M13 18.3 V27 C13 31.2 18.8 34.5 26 34.5 C33.2 34.5 39 31.2 39 27 V18.3 L26 24Z"
+        fill="currentColor"
+        opacity=".85"
+      />
+      <path d="M46 15.2 V25.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="46" cy="28.5" r="2.1" fill="currentColor" />
+    </svg>
+  );
+}
+
+/* the three award plaques — a full-width band under the about grid */
+function AwardsBlock() {
+  return (
+    <div className="awards reveal">
+      <div className="award">
+        <div className="award__medal" aria-hidden="true">
+          <Laurel />
+          <span className="award__num">№1</span>
+          <Laurel mirrored />
+        </div>
+        <p className="award__text">
+          <b>Топ-1 по литературе</b>
+          Уже долгое время — в&nbsp;числе первых репетиторов
+          на&nbsp;главном сайте-агрегаторе
+        </p>
+      </div>
+      <div className="award">
+        <div className="award__medal award__medal--stack" aria-hidden="true">
+          <span className="award__num">5,0</span>
+          <span className="award__stars">
+            <Star /><Star /><Star /><Star /><Star />
+          </span>
+        </div>
+        <p className="award__text">
+          <b>Средняя оценка — 5&nbsp;из&nbsp;5</b>
+          По отзывам <strong>более 120&nbsp;учеников</strong> за&nbsp;всё
+          время — на&nbsp;всех платформах
+        </p>
+      </div>
+      <div className="award">
+        <div className="award__medal" aria-hidden="true">
+          <Mortarboard />
+        </div>
+        <p className="award__text">
+          <b>Магистр филологии СПбГУ</b>
+          Классическое академическое образование — филологический
+          факультет, государственный диплом
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function About() {
   return (
     <section className="about section-pad" id="about">
@@ -152,6 +231,8 @@ export function About() {
           <div className="about__art" aria-hidden="true">
             <img
               src={workSrc("the-seagull")}
+              srcSet={workSrcSet("the-seagull")}
+              sizes="(max-width: 860px) min(340px, calc(100vw - 2.5rem)), (max-width: 1280px) 35vw, 430px"
               alt=""
               data-depth="0.12"
               loading="lazy"
@@ -179,20 +260,9 @@ export function About() {
               <li>9 лет частной подготовки к ЕГЭ и олимпиадам по литературе</li>
               <li>Авторские материалы: банк аргументов и разборы по критериям ФИПИ</li>
             </ul>
-            <div className="award">
-              <div className="award__medal" aria-hidden="true">
-                <Laurel />
-                <span className="award__num">№1</span>
-                <Laurel mirrored />
-              </div>
-              <p className="award__text">
-                <b>Топ-1 по литературе</b>
-                Уже долгое время — в&nbsp;числе первых репетиторов на&nbsp;главном
-                сайте-агрегаторе
-              </p>
-            </div>
           </div>
         </div>
+        <AwardsBlock />
       </div>
     </section>
   );
@@ -204,6 +274,8 @@ export function Cta() {
       <img
         className="cta__lamp"
         src={workSrc("white-nights")}
+        srcSet={workSrcSet("white-nights")}
+        sizes="(max-width: 820px) 64vw, (max-width: 1588px) 34vw, 540px"
         alt=""
         data-depth="0.2"
         loading="lazy"
@@ -227,7 +299,7 @@ export function Cta() {
           </li>
         </ol>
 
-        <div className="cta__box reveal">
+        <div className="cta__box reveal" id="composer">
           <h2>Начнём <em>со света</em></h2>
           <p>
             Бесплатная диагностика: за 60 минут определим реальный уровень,

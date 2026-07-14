@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
-import { TG_URL, workSrc } from "../data";
+import { workSrc, workSrcSet } from "../data";
 import { SpinBadge } from "./SpinBadge";
 import { ParadeStage } from "./ParadeStage";
 
@@ -33,14 +33,17 @@ export function Hero() {
     <header className="hero" id="top" ref={root}>
       <div className="wrap">
         <div className="hero__stage">
-          <div className="hero__cat" aria-hidden="true">
+          <div className="hero__bloom" aria-hidden="true">
             <img
-              src={workSrc("master-and-margarita")}
+              src={workSrc("the-cherry-orchard")}
+              srcSet={workSrcSet("the-cherry-orchard")}
+              sizes="(max-width: 940px) 58vw, (max-width: 1476px) 42vw, 620px"
               alt=""
               data-mouse="18"
               width="1254"
               height="1254"
               fetchPriority="high"
+              decoding="async"
             />
           </div>
 
@@ -48,16 +51,6 @@ export function Hero() {
             <span className="mask hero__l1"><span className="mask__in">Литература</span></span>
             <span className="mask hero__l2"><span className="mask__in"><em>сдаётся.</em></span></span>
           </h1>
-
-          <div className="hero__bloom" aria-hidden="true">
-            <img
-              src={workSrc("the-cherry-orchard")}
-              alt=""
-              data-mouse="34"
-              width="1254"
-              height="1254"
-            />
-          </div>
 
           <SpinBadge extraClass="badge--hero" />
         </div>
@@ -70,7 +63,7 @@ export function Hero() {
               выходим на экзамен без сюрпризов.
             </p>
             <div className="hero__cta">
-              <a className="btn btn--lg" href={TG_URL} target="_blank" rel="noopener">
+              <a className="btn btn--lg" href="#composer">
                 Записаться на диагностику <span className="arrow">→</span>
               </a>
               <a className="link-under" href="#program">Программа</a>

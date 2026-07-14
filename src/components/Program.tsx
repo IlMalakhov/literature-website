@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { workSrc } from "../data";
+import { workSrc, workSrcSet } from "../data";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -124,6 +124,8 @@ export function Program() {
               <span className="hp__ghost" aria-hidden="true">{p.index}</span>
               <img
                 src={workSrc(p.img)}
+                srcSet={workSrcSet(p.img)}
+                sizes="(max-width: 899px) min(320px, 72vw), (max-width: 1356px) 34vw, 454px"
                 alt=""
                 loading="lazy"
                 decoding="async"

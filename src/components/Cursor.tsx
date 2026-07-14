@@ -6,7 +6,7 @@ type SpriteName = keyof typeof CURSORS;
 type Zone = "quill" | "redpen" | "pixel";
 
 const INTERACTIVE =
-  "a, button, [role='button'], [role='option'], summary, label, [data-mark]";
+  "a, button, [role='button'], [role='option'], [role='slider'], summary, label, [data-mark]";
 const TEXTFIELD = "input, textarea, select";
 const ROSE = "238, 93, 120";     // --accent
 const DEEP = "165, 43, 70";      // --btn
@@ -218,18 +218,31 @@ export function Cursor() {
 
     const drawUnderline = () => {
       if (!underline || !underline.isConnected || ul.a <= 0.01) return;
-      const r = underline.getBoundingClientRect();
-      if (r.bottom < -40 || r.top > innerHeight + 40) return;
-      const y = r.bottom + 3;
-      const w = r.width * ul.p;
+      // one pen stroke that breaks across wrapped lines and hugs each line's
+      // text: getClientRects() gives a box per line fragment; the draw-in
+      // progress is spread over their combined width so it flows line to line
+      const rects = [...underline.getClientRects()].filter((r) => r.width > 1);
+      if (!rects.length) return;
+      const total = rects.reduce((s, r) => s + r.width, 0);
+      let remaining = ul.p * total;          // px of stroke still to reveal
+      let phase = 0;                          // cumulative x — keeps the wave continuous
       ctx.strokeStyle = `rgba(${DEEP}, ${0.95 * ul.a})`;
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let x = 0; x <= w; x += 2) {
-        const yy = y + Math.sin(x / 4.5) * 1.8;
-        x === 0 ? ctx.moveTo(r.left + x, yy) : ctx.lineTo(r.left + x, yy);
+      for (const r of rects) {
+        if (remaining <= 0) break;
+        const w = Math.min(r.width, remaining);
+        const start = phase;
+        remaining -= r.width;
+        phase += r.width;
+        if (r.bottom < -40 || r.top > innerHeight + 40) continue;
+        const y = r.bottom + 3;
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 2) {
+          const yy = y + Math.sin((start + x) / 4.5) * 1.8;
+          x === 0 ? ctx.moveTo(r.left + x, yy) : ctx.lineTo(r.left + x, yy);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
     };
 
     const drawChecks = (now: number) => {

@@ -26,6 +26,24 @@ export function Essay() {
   useLayoutEffect(() => {
     const section = root.current;
     if (!section) return;
+
+    // Pin each flag to the top-right corner of its mark's first line. An
+    // abs-positioned child of a wrapped inline resolves its containing block
+    // against the FIRST line fragment, so offsetting by that fragment's width
+    // lands the flag at the end of line 1 whether or not the mark wraps.
+    const layoutFlags = () => {
+      section.querySelectorAll<HTMLElement>(".essay__mark").forEach((mark) => {
+        const flag = mark.querySelector<HTMLElement>(".essay__flag");
+        const first = mark.getClientRects()[0];
+        if (!flag || !first) return;
+        flag.style.left = `${first.width}px`;
+        flag.style.top = "0px";
+      });
+    };
+    layoutFlags();
+    addEventListener("resize", layoutFlags);
+    document.fonts?.ready.then(layoutFlags);
+
     const mm = gsap.matchMedia(section);
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
@@ -65,7 +83,10 @@ export function Essay() {
         .forEach((el) => el.classList.add("on"));
     });
 
-    return () => mm.revert();
+    return () => {
+      removeEventListener("resize", layoutFlags);
+      mm.revert();
+    };
   }, []);
 
   return (
