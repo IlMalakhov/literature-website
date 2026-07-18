@@ -38,7 +38,15 @@ export const tgUrl = (text: string) =>
     ? `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(text)}`
     : `https://t.me/+${TG_PHONE}`;
 
-export const TG_URL = tgUrl(buildTgMessage());
+/* FAQ «остался свой вопрос» link: an open-ended draft instead of the booking one */
+export const TG_QUESTION_URL = tgUrl(
+  "Здравствуйте, Дарья, у меня есть вопрос по поводу занятий: ",
+);
+
+/* Footer contact line: just open the chat, no draft */
+export const TG_PLAIN_URL = TG_USERNAME
+  ? `https://t.me/${TG_USERNAME}`
+  : `https://t.me/+${TG_PHONE}`;
 
 export const BADGE_TEXT =
   "ПОДГОТОВКА К ЕГЭ · ЛИТЕРАТУРА · ЗАПИСЬ НА ДИАГНОСТИКУ · ";

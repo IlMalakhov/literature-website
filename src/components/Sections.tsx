@@ -1,13 +1,9 @@
-import { useLayoutEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  MARQUEE, MARQUEE_TAGS, STATS, TG_URL, workSrc, workSrcSet,
+  MARQUEE, MARQUEE_TAGS, TG_PLAIN_URL, workSrc, workSrcSet,
 } from "../data";
 import { TgComposer } from "./TgComposer";
 import { QuotesScale } from "./QuotesScale";
-
-gsap.registerPlugin(ScrollTrigger);
+import { Bento } from "./Bento";
 
 /* Two ribbons drifting in opposite directions: titles one way, exam tags the other. */
 export function Marquee() {
@@ -29,34 +25,10 @@ export function Marquee() {
   );
 }
 
-/* Manifesto + stats: numbers count up when they scroll into view. */
+/* Manifesto + «картотека»: the bento mosaic replaces the old stat strip. */
 export function Stats() {
-  const root = useRef<HTMLElement>(null);
-
-  useLayoutEffect(() => {
-    const section = root.current;
-    if (!section) return;
-    const mm = gsap.matchMedia(section);
-
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      section.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
-        const target = parseFloat(el.dataset.count || "0");
-        const state = { v: 0 };
-        gsap.to(state, {
-          v: target,
-          duration: 2,
-          ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 88%", once: true },
-          onUpdate() { el.textContent = String(Math.round(state.v)); },
-        });
-      });
-    });
-
-    return () => mm.revert();
-  }, []);
-
   return (
-    <section className="manifest" id="results" ref={root}>
+    <section className="manifest" id="results">
       <img
         className="manifest__bg"
         src={workSrc("war-and-peace")}
@@ -74,16 +46,7 @@ export function Stats() {
           <span className="manifest__small reveal">Литература — не лотерея.</span>
           <span className="manifest__big reveal">Это <em>система</em>.</span>
         </h2>
-        <div className="stats__grid">
-          {STATS.map((s) => (
-            <div className="stat reveal" key={s.label}>
-              <div className="stat__num">
-                {s.prefix}<span data-count={s.value}>{s.value}</span>{s.suffix}
-              </div>
-              <div className="stat__label">{s.label}</div>
-            </div>
-          ))}
-        </div>
+        <Bento />
       </div>
     </section>
   );
@@ -318,12 +281,10 @@ export function Footer() {
     <footer className="footer">
       <div className="wrap footer__inner">
         <span className="footer__name">Дарья Федорова</span>
-        <a href={TG_URL} target="_blank" rel="noopener">
+        <a href={TG_PLAIN_URL} target="_blank" rel="noopener">
           Telegram · @dashavrodeda
         </a>
-        <span className="footer__quiet">
-          © 2026 · Литература · ЕГЭ · онлайн и Санкт-Петербург
-        </span>
+        <span className="footer__quiet">© 2026 · Литература · ЕГЭ</span>
       </div>
     </footer>
   );

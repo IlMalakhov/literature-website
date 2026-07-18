@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FAQ_STUDENT, FAQ_PARENT, TG_URL } from "../data";
+import { FAQ_STUDENT, FAQ_PARENT, TG_QUESTION_URL } from "../data";
 
 /* «Вопросы»: the objections parents or students raise before booking, answered.
    Accordion opens via grid-template-rows 0fr→1fr — no height measuring,
@@ -74,7 +74,7 @@ export function Faq() {
 
         <p className="faq__more reveal">
           Остался свой вопрос?{" "}
-          <a className="link-under" href={TG_URL} target="_blank" rel="noopener">
+          <a className="link-under" href={TG_QUESTION_URL} target="_blank" rel="noopener">
             Задайте его в Telegram
           </a>{" "}
           — отвечаю лично.

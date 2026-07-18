@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { TG_URL } from "../data";
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -18,7 +17,7 @@ export function Nav() {
           Дарья Федорова
           <small>Литература · ЕГЭ</small>
         </a>
-        <a className="nav__cta" href={TG_URL} target="_blank" rel="noopener">
+        <a className="nav__cta" href="#composer">
           Написать в Telegram <span className="arrow">→</span>
         </a>
       </div>
