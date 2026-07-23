@@ -2,19 +2,20 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SEGMENTS, type FigureKey } from "../data";
+import { runParadeIntro } from "./paradeIntro";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* Lit windows scattered over the (dimmed) skyline band; the sprites stay at
    full opacity so they read as lamps behind the roofline. */
 const WINDOWS: ReadonlyArray<{ n: 1 | 2 | 3 | 4 | 5 | 6; left: string; bottom: number }> = [
-  { n: 4, left: "6%", bottom: 46 },
-  { n: 2, left: "17%", bottom: 64 },
-  { n: 6, left: "31%", bottom: 52 },
-  { n: 1, left: "46%", bottom: 40 },
-  { n: 3, left: "63%", bottom: 66 },
-  { n: 5, left: "78%", bottom: 44 },
-  { n: 3, left: "91%", bottom: 58 },
+  { n: 4, left: "6.2%", bottom: 63 },
+  { n: 2, left: "18.1%", bottom: 55 },
+  { n: 6, left: "30.5%", bottom: 58 },
+  { n: 1, left: "44.6%", bottom: 48 },
+  { n: 3, left: "62.5%", bottom: 50 },
+  { n: 5, left: "71.8%", bottom: 65 },
+  { n: 3, left: "91%", bottom: 42 },
 ];
 
 function Figure({ k, msg }: { k: FigureKey; msg: string }) {
@@ -39,6 +40,10 @@ function Figure({ k, msg }: { k: FigureKey; msg: string }) {
  * crosses the stage on the slow-mo ease, speaks its bubble mid-stage, and
  * strides off. Dim strollers and a seagull cross continuously; the timeline
  * only plays while the stage is on screen.
+ *
+ * On first paint the street unfolds like a pop-up book (see paradeIntro.ts)
+ * alongside the hero copy, and nothing walks until it is over: `sync()` gates
+ * the loop on BOTH the entrance having finished and the stage being in view.
  */
 export function ParadeStage() {
   const root = useRef<HTMLDivElement>(null);
@@ -52,6 +57,7 @@ export function ParadeStage() {
       figs[k] = stage.querySelector<HTMLElement>(`.fig--${k}`)!;
     });
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let disposeIntro: (() => void) | null = null;
 
     const ctx = gsap.context(() => {
       if (reduced) {
@@ -102,9 +108,14 @@ export function ParadeStage() {
           .to(bub, { scale: 0, opacity: 0, duration: 0.3, ease: "back.in(1.4)" }, `<${(dur * 0.42).toFixed(2)}`);
       });
 
+      /* Ambient crossings start paused too: during the entrance the street has
+         to hold still, otherwise a stroller drifts through a stack of plates
+         that has not finished assembling. */
+      const ambient: gsap.core.Tween[] = [];
+
       // dim strollers drifting across the back street, never stopping
       stage.querySelectorAll<HTMLElement>(".bgfig").forEach((el, i) => {
-        gsap.fromTo(
+        ambient.push(gsap.fromTo(
           el,
           { xPercent: -50, x: () => -off() },
           {
@@ -114,12 +125,13 @@ export function ParadeStage() {
             repeat: -1,
             delay: i * 11,
             repeatRefresh: true,
+            paused: true,
           },
-        );
+        ));
       });
 
       // the seagull crosses high above the roofline now and then
-      gsap.fromTo(
+      ambient.push(gsap.fromTo(
         stage.querySelector(".gull"),
         { xPercent: -50, x: () => -off() },
         {
@@ -130,19 +142,35 @@ export function ParadeStage() {
           delay: 6,
           repeatDelay: 15,
           repeatRefresh: true,
+          paused: true,
         },
-      );
+      ));
+
+      let inView = false;
+      let entered = false;
+      const sync = () => (inView && entered ? tl.play() : tl.pause());
+      const startLoop = () => {
+        entered = true;
+        ambient.forEach((t) => t.play());
+        sync();
+      };
 
       // run the parade only while the street is on screen
       ScrollTrigger.create({
         trigger: stage,
         start: "top bottom",
         end: "bottom top",
-        onToggle: (self) => (self.isActive ? tl.play() : tl.pause()),
+        onToggle: (self) => { inView = self.isActive; sync(); },
       });
+
+      // reduced motion never gets here; everyone else gets the entrance first
+      disposeIntro = runParadeIntro(stage, startLoop);
     }, root);
 
-    return () => ctx.revert();
+    return () => {
+      disposeIntro?.();
+      ctx.revert();
+    };
   }, []);
 
   return (
@@ -165,7 +193,9 @@ export function ParadeStage() {
       <div className="bgfig bgfig--2"><div className="sprite sprite--onegin" /></div>
 
       <div className="gull"><div className="sprite sprite--gull" /></div>
-      <div className="fog fog--back" />
+      {/* the band and its drift live on the inner box, so the entrance can
+          hinge the outer one without fighting fog-drift — see 10-parade.css */}
+      <div className="fog fog--back"><div className="fog__in" /></div>
 
       {SEGMENTS.map(([k, msg]) => <Figure key={k} k={k} msg={msg} />)}
 
@@ -174,7 +204,7 @@ export function ParadeStage() {
         <span className="lamp__glow" />
         <img src="/parade/lamp.png" alt="" />
       </div>
-      <div className="fog fog--front" />
+      <div className="fog fog--front"><div className="fog__in" /></div>
     </div>
   );
 }

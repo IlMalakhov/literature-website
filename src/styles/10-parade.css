@@ -1,0 +1,477 @@
+/* ---------- Parade: shadow-theatre street ----------
+   Last item of the hero's flex column, so its bottom edge — the cobbles — is
+   the bottom of the first viewport. `height` is the preferred size; when the
+   copy above needs more room than the viewport has, flex-shrink trims this box
+   and, since everything in here is anchored to `bottom`, the crop eats sky off
+   the top rather than lifting the pavement. The floor keeps the tallest figure
+   (~150px + its 22px curb offset) from losing its head. */
+.stage {
+    position: relative;
+    flex: 0 1 auto;
+    height: clamp(240px, 36vh, 320px);
+    min-height: clamp(150px, 20vh, 210px);
+    margin-top: clamp(1.4rem, 3vw, 2.4rem);
+    overflow: hidden;
+}
+.stage::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 20px;
+    z-index: 1;
+    background: linear-gradient(
+        180deg,
+        rgba(240, 229, 216, 0.05),
+        transparent 80%
+    );
+}
+
+/* backdrop: stars, moon + roofline (pixel sprites from /public/parade) */
+.stars {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    width: 2px;
+    height: 2px;
+    opacity: 0.3;
+    pointer-events: none;
+    box-shadow:
+        40px 30px var(--fig-c),
+        170px 68px var(--fig-c),
+        335px 22px var(--fig-c),
+        480px 55px var(--fig-c),
+        620px 14px var(--fig-c),
+        790px 66px var(--fig-c),
+        960px 30px var(--fig-c),
+        1120px 58px var(--fig-c),
+        1290px 20px var(--fig-c),
+        1450px 48px var(--fig-c),
+        1580px 34px var(--fig-c);
+}
+.moon {
+    position: absolute;
+    left: 9%;
+    top: 4px;
+    z-index: 0;
+    width: clamp(40px, 5vw, 64px);
+}
+.moon img {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    opacity: 0.55;
+}
+.moon::before {
+    content: "";
+    position: absolute;
+    inset: -55%;
+    background: radial-gradient(
+        closest-side,
+        rgba(240, 229, 216, 0.12),
+        transparent 70%
+    );
+}
+.skyline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 20px;
+    z-index: 0;
+    height: clamp(70px, 12vh, 110px);
+    background: url(/parade/skyline.png) left bottom / auto 100% repeat-x;
+    image-rendering: pixelated;
+    opacity: 0.11;
+}
+.skyline--far {
+    bottom: 34px;
+    height: clamp(56px, 10vh, 90px);
+    transform: scaleX(-1);
+    opacity: 0.05;
+}
+/* Lit windows riding the dimmed roofline band. They sit behind both fog bands
+   (z 0 against 3 and 6), but the mist over them is only ~15% opaque, so paint
+   order alone never reads as distance — these are the sharpest, brightest thing
+   in the band and sharpness reads as nearness. The halo is the light diffusing
+   through the mist and the lower opacity is the mist eating it; between them the
+   windows sit back where the fog says they are. */
+.litwin {
+    position: absolute;
+    z-index: 0;
+    height: 16px;
+    width: auto;
+    image-rendering: pixelated;
+    opacity: 0.72;
+    filter: drop-shadow(0 0 4px rgba(236, 190, 120, 0.45));
+}
+
+/* background strollers on the far pavement */
+.bgfig {
+    position: absolute;
+    bottom: 44px;
+    left: 50%;
+    z-index: 2;
+    opacity: 0.26;
+    filter: blur(0.4px);
+}
+.bgfig--1 .sprite {
+    --sc: 0.9;
+}
+.bgfig--2 .sprite {
+    --sc: 0.55;
+}
+
+/* the seagull crossing high above the roofline */
+.gull {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+/* Drifting mist: pixel dither band, replaces the old blurred gradients.
+   Two boxes per band on purpose. The outer .fog is the layout box and the only
+   thing the entrance (paradeIntro.ts) ever transforms; .fog__in carries the
+   texture and its own endless drift. They have to stay apart: a CSS keyframe
+   animation outranks inline styles, so while both lived on one element the
+   entrance could only move the band by suspending fog-drift — and restoring it
+   snapped the band 56px sideways, because an animation resumes at its FIRST
+   keyframe (±3%), not where the entrance left the layer (0). */
+.fog {
+    position: absolute;
+    left: -15%;
+    width: 130%;
+    z-index: 3;
+    pointer-events: none;
+}
+.fog__in {
+    position: absolute;
+    inset: 0;
+    background: url(/parade/mist.png) left bottom / auto 240px repeat-x;
+    image-rendering: pixelated;
+    opacity: 0.16;
+    /* The band's own top edge is a straight cut across the dither, which reads
+       as a hard line, not as fog. Mask most of the height away in a long ramp so
+       it thins out into the sky instead of ending; the boxes are taller than the
+       fog looks for exactly this reason — the extra height is all falloff. */
+    -webkit-mask-image: linear-gradient(
+        to top,
+        #000 0%,
+        rgba(0, 0, 0, 0.95) 30%,
+        rgba(0, 0, 0, 0.7) 55%,
+        rgba(0, 0, 0, 0.3) 78%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to top,
+        #000 0%,
+        rgba(0, 0, 0, 0.95) 30%,
+        rgba(0, 0, 0, 0.7) 55%,
+        rgba(0, 0, 0, 0.3) 78%,
+        transparent 100%
+    );
+    /* slow enough to read as weather rather than as a moving layer */
+    animation: fog-drift 100s ease-in-out infinite alternate;
+}
+.fog--back {
+    bottom: 26px;
+    height: 104px;
+}
+.fog--front {
+    bottom: -6px;
+    height: 70px;
+    z-index: 6;
+}
+.fog--front .fog__in {
+    animation-duration: 76s;
+    animation-direction: alternate-reverse;
+    opacity: 0.12;
+}
+@keyframes fog-drift {
+    from {
+        transform: translateX(-3%);
+    }
+    to {
+        transform: translateX(3%);
+    }
+}
+
+/* pixel cobblestone pavement; the curb line sits just under the feet */
+.cobbles {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 24px;
+    z-index: 1;
+    background: url(/parade/cobbles.png) left top / auto 88px repeat-x;
+    image-rendering: pixelated;
+    opacity: 0.3;
+}
+
+/* the lamp in the foreground — figures pass behind it */
+.lamp {
+    position: absolute;
+    right: 5%;
+    bottom: 20px;
+    z-index: 5;
+    height: clamp(150px, 26vh, 215px);
+    aspect-ratio: 23 / 127;
+}
+.lamp img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+.lamp__glow {
+    position: absolute;
+    top: 18%;
+    left: 50%;
+    z-index: -1;
+    width: 130px;
+    height: 130px;
+    margin: -65px 0 0 -65px;
+    background: radial-gradient(
+        closest-side,
+        rgba(236, 190, 120, 0.28),
+        transparent 70%
+    );
+    animation: lamp-flicker 5s ease-in-out infinite;
+}
+@keyframes lamp-flicker {
+    0%,
+    100% {
+        opacity: 0.75;
+    }
+    12% {
+        opacity: 0.95;
+    }
+    24% {
+        opacity: 0.8;
+    }
+    46% {
+        opacity: 1;
+    }
+    61% {
+        opacity: 0.82;
+    }
+    78% {
+        opacity: 0.96;
+    }
+}
+
+/* front figures */
+.fig {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    z-index: 4;
+}
+/* contact shadow keeps feet on the pavement */
+.fig::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 8%;
+    right: 8%;
+    height: 10px;
+    background: radial-gradient(
+        50% 50% at 50% 50%,
+        rgba(0, 0, 0, 0.55),
+        transparent 72%
+    );
+    filter: blur(3px);
+}
+
+/* sprite strips: equal-width cells, feet on the bottom row. steps() flips
+   through the cells; cycles run unconditionally — figures are only ever
+   moving or offscreen (pausing via GSAP callbacks broke on timeline repeats).
+   Geometry per figure: --cw/--ch native cell size, --n frames, --sc display
+   scale, --dur one full cycle. */
+.sprite {
+    width: calc(var(--cw) * var(--sc));
+    height: calc(var(--ch) * var(--sc));
+    background-image: var(--img);
+    background-repeat: no-repeat;
+    background-size: calc(var(--cw) * var(--n) * var(--sc))
+        calc(var(--ch) * var(--sc));
+    image-rendering: pixelated;
+    animation: sprite-walk var(--dur, 0.8s) steps(8) infinite;
+}
+@keyframes sprite-walk {
+    to {
+        background-position-x: calc(var(--cw) * var(--n) * var(--sc) * -1);
+    }
+}
+
+.sprite--oblomov {
+    --img: url(/parade/oblomov.png);
+    --cw: 46px;
+    --ch: 75px;
+    --n: 8;
+    --sc: 2;
+    --dur: 1s;
+}
+.sprite--katerina {
+    --img: url(/parade/katerina.png);
+    --cw: 40px;
+    --ch: 71px;
+    --n: 8;
+    --sc: 2;
+    --dur: 1s;
+}
+.sprite--onegin {
+    --img: url(/parade/onegin.png);
+    --cw: 52px;
+    --ch: 106px;
+    --n: 8;
+    --sc: 1.4;
+    --dur: 1s;
+}
+.sprite--rask {
+    --img: url(/parade/raskolnikov.png);
+    --cw: 55px;
+    --ch: 89px;
+    --n: 8;
+    --sc: 1.65;
+    --dur: 1s;
+}
+.sprite--behemoth {
+    --img: url(/parade/behemoth.png);
+    --cw: 77px;
+    --ch: 104px;
+    --n: 8;
+    --sc: 1.45;
+    --dur: 1.5s;
+}
+.sprite--carriage {
+    --img: url(/parade/carriage.png);
+    --cw: 104px;
+    --ch: 74px;
+    --n: 8;
+    --sc: 1.9;
+    --dur: 1s;
+}
+.sprite--gull {
+    --img: url(/parade/seagull.png);
+    --cw: 54px;
+    --ch: 60px;
+    --n: 4;
+    --sc: 1.1;
+    --dur: 0.8s;
+    animation-timing-function: steps(4);
+}
+
+.bubble {
+    position: absolute;
+    bottom: calc(100% + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.bubble__in {
+    transform: scale(0);
+    opacity: 0;
+    transform-origin: bottom center;
+    background: var(--btn);
+    color: #f8e9ec;
+    font-family: var(--font-serif);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1.35;
+    white-space: nowrap;
+    padding: 0.65em 1.15em;
+    border-radius: 18px;
+    border-bottom-left-radius: 5px;
+    border: 1px solid var(--accent-dim);
+    box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.55);
+    position: relative;
+}
+.bubble__in::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    margin-left: -8px;
+    bottom: -7px;
+    width: 14px;
+    height: 14px;
+    background: var(--btn);
+    clip-path: polygon(0 0, 100% 0, 20% 100%);
+}
+@media (max-width: 640px) {
+    .stage {
+        height: 216px;
+    }
+    .sprite--oblomov {
+        --sc: 1.4;
+    }
+    .sprite--katerina {
+        --sc: 1.4;
+    }
+    .sprite--onegin {
+        --sc: 1;
+    }
+    .sprite--rask {
+        --sc: 1.15;
+    }
+    .sprite--behemoth {
+        --sc: 1;
+    }
+    .sprite--carriage {
+        --sc: 1.35;
+    }
+    .sprite--gull {
+        --sc: 0.8;
+    }
+    .bgfig--1 .sprite {
+        --sc: 0.62;
+    }
+    .bgfig--2 .sprite {
+        --sc: 0.4;
+    }
+    .bgfig {
+        bottom: 36px;
+    }
+    .skyline {
+        height: 62px;
+    }
+    .skyline--far {
+        height: 50px;
+        bottom: 30px;
+    }
+    .lamp {
+        height: 128px;
+        right: 3%;
+    }
+    .litwin {
+        height: 11px;
+    }
+    .bubble__in {
+        font-size: 0.85rem;
+    } /* fit override: nowrap quote on narrow screens */
+}
+/* Small phones: last of the hero's slack comes out of the sky here. 132px is
+   the tallest mobile figure (onegin, 106px) plus its 22px curb offset — the
+   floor below which heads start losing their hats. */
+@media (max-width: 940px) and (max-height: 700px) {
+    .stage {
+        min-height: 132px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sprite,
+    .fog__in,
+    .lamp__glow {
+        animation: none;
+    }
+    .gull,
+    .stars {
+        display: none;
+    }
+}
+

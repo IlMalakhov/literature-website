@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { workSrc, workSrcSet } from "../data";
+import { IconArrowForward } from "./Icons";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -113,7 +114,7 @@ export function Program() {
           <h2>Курс — <em>по структуре</em> экзамена</h2>
         </div>
         <div className="hp__hint" aria-hidden="true">
-          листайте <span>→</span>
+          листайте <IconArrowForward className="hp__hint-arrow" />
         </div>
       </div>
 

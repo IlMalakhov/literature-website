@@ -1,0 +1,37 @@
+/* ---------- Fixed chrome: progress bar + side rail ---------- */
+.progressbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 90;
+    pointer-events: none;
+}
+.progressbar div {
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(0);
+}
+.rail {
+    position: fixed;
+    right: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    font-family: var(--font-sans);
+    font-size: var(--label-xs);
+    letter-spacing: 0.55em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: 0.35;
+    z-index: 40;
+    pointer-events: none;
+}
+@media (max-width: 1100px) {
+    .rail {
+        display: none;
+    }
+}
+

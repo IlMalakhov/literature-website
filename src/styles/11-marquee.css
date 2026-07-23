@@ -1,0 +1,72 @@
+/* ---------- Marquee: two ribbons, opposite directions ---------- */
+.marquee {
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+    background: linear-gradient(
+        90deg,
+        var(--wine-deep),
+        #5e1428 50%,
+        var(--wine-deep)
+    );
+    border-block: 1px solid var(--accent-dim);
+    transform: rotate(-1.6deg) scale(1.03);
+}
+.marquee__row {
+    overflow: hidden;
+    white-space: nowrap;
+    padding-block: 0.85rem;
+}
+.marquee__row--alt {
+    border-top: 1px solid rgba(238, 93, 120, 0.22);
+    padding-block: 0.6rem;
+}
+.marquee__track {
+    display: inline-flex;
+    align-items: center;
+    gap: 2.4rem;
+    animation: marq 38s linear infinite;
+}
+.marquee__row--alt .marquee__track {
+    animation: marq-alt 26s linear infinite reverse;
+}
+.marquee__row span {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: var(--text-quote);
+    color: #f2c4cc;
+}
+.marquee__row span::after {
+    content: "✦";
+    margin-left: 2.4rem;
+    color: var(--accent);
+    font-style: normal;
+    font-size: 0.8em;
+}
+.marquee__row--alt span {
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-size: var(--label-xs);
+    letter-spacing: 0.38em;
+    text-transform: uppercase;
+    color: #d98d9c;
+}
+.marquee__row--alt span::after {
+    content: "·";
+    margin-left: 2.4rem;
+}
+@keyframes marq {
+    to {
+        transform: translateX(-50%);
+    }
+}
+/* alt row triples its content, so one seamless period is one third of the track */
+@keyframes marq-alt {
+    to {
+        transform: translateX(calc(-100% / 3));
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .marquee__track {
+        animation: none;
+    }
+}
+

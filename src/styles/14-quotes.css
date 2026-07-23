@@ -1,0 +1,254 @@
+/* ---------- Quotes · «шкала баллов»: балл как навигация ------------------- */
+.quotes {
+    position: relative;
+    overflow: hidden;
+}
+.quotes__bg {
+    position: absolute;
+    left: -12%;
+    bottom: -8%;
+    width: min(58vw, 720px);
+    opacity: 0.07;
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(
+        60% 60% at 50% 50%,
+        #000 40%,
+        transparent 75%
+    );
+    mask-image: radial-gradient(60% 60% at 50% 50%, #000 40%, transparent 75%);
+}
+.qsc {
+    max-width: 1040px;
+}
+.qsc__grid {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.75fr) 1.25fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+    min-height: 17rem;
+}
+/* вес цифры = сам балл (Unbounded variable, wght из инлайна);
+   на перескоках по шкале вес доезжает плавно, в проезде им рулит gsap */
+.qsc__num {
+    font-family: var(--font-sans);
+    font-size: var(--h-2xl);
+    line-height: 1;
+    color: var(--ink);
+    transition: font-weight 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.qsc__num--sweep {
+    transition: none;
+}
+.qsc__meta {
+    font-family: var(--font-sans);
+    font-size: var(--label-sm);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 1rem 0 0;
+}
+.qsc__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+.qsc__card {
+    margin: 0;
+}
+.qsc__card p {
+    font-size: var(--text-lede);
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0 0 0.9rem;
+}
+.qsc__card footer {
+    display: flex;
+    align-items: baseline;
+    gap: 1.1rem;
+    font-family: var(--font-sans);
+}
+.qsc__card footer b {
+    font-size: var(--label-md);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+}
+.qsc__card footer small {
+    font-size: var(--label-xs);
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+}
+
+/* шкала: базовая линия + минорные засечки фоном, реальные баллы — спанами */
+.qsc__ruler {
+    position: relative;
+    height: 116px;
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    cursor: ew-resize;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    outline: none;
+}
+.qsc__ruler:focus-visible {
+    outline: 1px solid var(--accent-dim);
+    outline-offset: 10px;
+}
+.qsc__ruler::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 34px;
+    height: 1px;
+    background: var(--line);
+}
+.qsc__ruler::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 34px;
+    height: 9px;
+    background-image: linear-gradient(
+        90deg,
+        var(--line-soft) 0 1px,
+        transparent 1px
+    );
+    background-size: calc(100% / 22) 100%;
+}
+.qsc__tick {
+    position: absolute;
+    bottom: 34px;
+    width: 0;
+}
+/* высота засечки задаётся инлайном: гистограмма «сколько сдали на балл» */
+.qsc__tick i {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent-dim);
+}
+.qsc__tick em {
+    position: absolute;
+    left: 0;
+    top: 24px;
+    transform: translateX(-50%);
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-size: var(--label-xs);
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    opacity: 0.55;
+    transition:
+        color 0.3s,
+        opacity 0.3s;
+}
+.qsc__tick--cur i {
+    background: var(--accent);
+}
+.qsc__tick--cur em {
+    color: var(--accent);
+    opacity: 1;
+}
+/* отметка среднего балла: короткий пунктир и подпись над шкалой */
+.qsc__avg {
+    position: absolute;
+    bottom: 34px;
+    width: 0;
+    pointer-events: none;
+}
+.qsc__avg i {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: 20px;
+    background: repeating-linear-gradient(
+        180deg,
+        var(--accent-dim) 0 3px,
+        transparent 3px 6px
+    );
+}
+.qsc__avg em {
+    position: absolute;
+    left: 0;
+    bottom: 26px;
+    transform: translateX(-50%);
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-size: var(--label-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink-soft);
+}
+
+/* иголка: звёздочка на тонком стебле над текущим баллом */
+.qsc__needle {
+    position: absolute;
+    bottom: 34px;
+    width: 0;
+    transition: left 0.3s cubic-bezier(0.3, 0.7, 0.3, 1);
+    pointer-events: none;
+}
+.qsc__needle--sweep {
+    transition: none;
+}
+.qsc__needle::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: 46px;
+    background: linear-gradient(0deg, var(--accent), transparent);
+}
+.qsc__needle::after {
+    content: "✦";
+    position: absolute;
+    left: 0;
+    bottom: 46px;
+    transform: translateX(-50%);
+    color: var(--accent);
+    font-size: var(--text-md);
+    line-height: 1;
+    text-shadow: 0 0 14px var(--accent-dim);
+}
+.qsc__hint {
+    font-family: var(--font-sans);
+    font-size: var(--label-xs);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: 0.6;
+    margin-top: 1.2rem;
+}
+/* the two keycaps at the end of the hint: one glyph, mirrored for «влево» */
+.qsc__hint-arrow {
+    width: 1.15em;
+    height: auto;
+    vertical-align: -0.05em;
+    /* matches the line's own 0.3em letter-spacing, so the pair doesn't read
+       tighter than the caps before it */
+    margin-right: 0.45em;
+}
+.qsc__hint-arrow--back {
+    transform: scaleX(-1);
+}
+@media (max-width: 780px) {
+    .qsc__grid {
+        grid-template-columns: 1fr;
+        gap: 1.6rem;
+        min-height: 0;
+    }
+    .qsc__tick em {
+        display: none;
+    }
+    .qsc__tick--cur em,
+    .qsc__tick:first-child em,
+    .qsc__tick:nth-last-of-type(2) em {
+        display: block;
+    }
+}
+

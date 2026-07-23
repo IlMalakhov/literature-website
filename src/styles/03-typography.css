@@ -1,0 +1,31 @@
+/* ---------- Typography ---------- */
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.02;
+    margin: 0;
+    letter-spacing: 0.005em;
+}
+h2 em,
+h1 em,
+h3 em {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+}
+.lede {
+    font-size: var(--text-lede);
+    color: var(--ink-soft);
+}
+.tag {
+    font-family: var(--font-sans);
+    font-size: var(--label-sm);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite-react-ssg build",
     "preview": "vite preview",
-    "images:responsive": "bun tools/responsive-works.ts"
+    "images:responsive": "bun tools/responsive-works.ts",
+    "shot": "bun tools/shoot.ts"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.3.2",

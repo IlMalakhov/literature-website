@@ -48,8 +48,9 @@ export const TG_PLAIN_URL = TG_USERNAME
   ? `https://t.me/${TG_USERNAME}`
   : `https://t.me/+${TG_PHONE}`;
 
-export const BADGE_TEXT =
-  "ПОДГОТОВКА К ЕГЭ · ЛИТЕРАТУРА · ЗАПИСЬ НА ДИАГНОСТИКУ · ";
+/* Ends with U+00A0: SVG trims a normal trailing space, which would glue the
+   last dot to ПОДГОТОВКА where the ring text wraps around. */
+export const BADGE_TEXT = "ПОДГОТОВКА К ЕГЭ · ЛИТЕРАТУРА · ";
 
 /* --- The codifier library: one still-life per work, /works/<slug>.webp ---- */
 export type Work = {
@@ -97,18 +98,8 @@ export const MARQUEE_TAGS: ReadonlyArray<string> = [
   "теория литературы", "банк аргументов", "бюджет",
 ];
 
-/* средний балл: и в статистике, и отметкой на шкале отзывов (QuotesScale) */
+/* средний балл: цифрой в бенто (Bento) и отметкой на шкале отзывов (QuotesScale) */
 export const AVG_SCORE = 84;
-
-/* value is animated (count-up); prefix/suffix render as static glyphs */
-export const STATS: ReadonlyArray<{
-  value: number; prefix?: string; suffix?: string; label: string;
-}> = [
-  { value: AVG_SCORE, label: "средний балл учеников на ЕГЭ-2025" },
-  { value: 150, suffix: "+", label: "учеников за девять лет" },
-  { value: 92, suffix: "%", label: "поступили на бюджет" },
-  { value: 34, prefix: "+", label: "прирост балла за учебный год" },
-];
 
 export const QUOTES: ReadonlyArray<{
   text: string; who: string; role: string; score: string;
@@ -223,12 +214,25 @@ export const ESSAY_NOTES: ReadonlyArray<{
 ];
 
 /* --- «Маршрут года»: September → June, one step at a time ---------------- */
+
+/* A month leaf pinned to a step. Only some steps carry one — they punctuate
+   the thread rather than annotate every stop, so adding/removing a calendar
+   is an edit here, not in the component. */
+export type RoadCal = {
+  y: number;
+  m: number; // 1-indexed, human-readable
+  keys?: number[]; // the milestone itself — filled rose bead
+  soft?: number[]; // a repeating rhythm — hairline ring only
+  note: string;
+};
+
 export const ROAD_STEPS: ReadonlyArray<{
-  when: string; title: string; text: string;
+  when: string; title: string; text: string; cal?: RoadCal;
 }> = [
   {
     when: "Сентябрь", title: "Диагностика",
     text: "Стартовый срез и личная карта пробелов. Честный ответ, какой балл реален к июню.",
+    cal: { y: 2026, m: 9, keys: [8], note: "8 сентября — стартовый срез" },
   },
   {
     when: "Октябрь — декабрь", title: "Кодификатор и теория",
@@ -241,6 +245,10 @@ export const ROAD_STEPS: ReadonlyArray<{
   {
     when: "Февраль — апрель", title: "Сочинение каждую неделю",
     text: "Банк аргументов растёт, структура доведена до автоматизма. Каждая работа возвращается с разметкой эксперта.",
+    cal: {
+      y: 2027, m: 3, soft: [3, 10, 17, 24, 31],
+      note: "каждую среду — новое сочинение на проверку",
+    },
   },
   {
     when: "Май", title: "Стратегия экзамена",
@@ -249,6 +257,9 @@ export const ROAD_STEPS: ReadonlyArray<{
   {
     when: "Июнь", title: "Экзамен",
     text: "Выходим на предсказуемый результат: средний балл моих учеников — 84.",
+    // TODO: 1 июня — плейсхолдер. Свериться с расписанием ФИПИ на 2027, когда
+    // выйдет проект приказа (обычно осенью предыдущего года).
+    cal: { y: 2027, m: 6, keys: [1], note: "1 июня — ЕГЭ по литературе" },
   },
 ];
 

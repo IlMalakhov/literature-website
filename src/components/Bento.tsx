@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { AVG_SCORE, WORKS, workSrc } from "../data";
+import { IconArrowForward } from "./Icons";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -186,7 +187,10 @@ function Recto({ cell }: { cell: Cell }) {
       return (
         <a className="bl-cta" href="#composer">
           <span className="bl-lb">{cell.label}</span>
-          <span className="bl-cta__word">Записаться&nbsp;→</span>
+          <span className="bl-cta__word">
+            Записаться
+            <IconArrowForward className="bl-cta__arrow" aria-hidden="true" />
+          </span>
         </a>
       );
   }

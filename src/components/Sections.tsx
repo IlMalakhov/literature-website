@@ -1,16 +1,56 @@
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
 import {
   MARQUEE, MARQUEE_TAGS, TG_PLAIN_URL, workSrc, workSrcSet,
 } from "../data";
 import { TgComposer } from "./TgComposer";
 import { QuotesScale } from "./QuotesScale";
 import { Bento } from "./Bento";
+import {
+  Icon5CircleFill,
+  IconGraduationcapFill,
+  IconLaurelLeading,
+  IconLaurelTrailing,
+  IconStarFill,
+} from "./Icons";
 
 /* Two ribbons drifting in opposite directions: titles one way, exam tags the other. */
 export function Marquee() {
+  const root = useRef<HTMLDivElement>(null);
   const titles = [...MARQUEE, ...MARQUEE];
   const tags = [...MARQUEE_TAGS, ...MARQUEE_TAGS, ...MARQUEE_TAGS];
+
+  // The drift lives in CSS keyframes; hover eases their playbackRate instead
+  // of touching animation-duration, which would make the tracks jump.
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const speed = { v: 1 };
+    let tween: gsap.core.Tween | null = null;
+    const go = (v: number) => {
+      tween?.kill();
+      tween = gsap.to(speed, {
+        v,
+        duration: 0.9,
+        ease: "power2.out",
+        onUpdate: () => {
+          for (const a of el.getAnimations({ subtree: true })) a.playbackRate = speed.v;
+        },
+      });
+    };
+    const slow = () => go(0.12);
+    const full = () => go(1);
+    el.addEventListener("pointerenter", slow);
+    el.addEventListener("pointerleave", full);
+    return () => {
+      tween?.kill();
+      el.removeEventListener("pointerenter", slow);
+      el.removeEventListener("pointerleave", full);
+    };
+  }, []);
+
   return (
-    <div className="marquee" aria-hidden="true">
+    <div className="marquee" aria-hidden="true" ref={root}>
       <div className="marquee__row">
         <div className="marquee__track">
           {titles.map((t, i) => <span key={i}>{t}</span>)}
@@ -26,7 +66,7 @@ export function Marquee() {
 }
 
 /* Manifesto + «картотека»: the bento mosaic replaces the old stat strip. */
-export function Stats() {
+export function Manifesto() {
   return (
     <section className="manifest" id="results">
       <img
@@ -79,102 +119,45 @@ export function Quotes() {
   );
 }
 
-/* laurel branch for the award plaques; mirrored for the right side */
-function Laurel({ mirrored }: { mirrored?: boolean }) {
-  return (
-    <svg
-      className={`award__laurel${mirrored ? " award__laurel--r" : ""}`}
-      viewBox="0 0 26 52"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path d="M20 50 C12 40 9 30 11 20 C12 13 15 7 20 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M13.5 38 C7 37 3.5 33 2.5 27 C8.5 28 12.5 32 13.5 38Z" fill="currentColor" />
-      <path d="M11.8 28 C6 26.5 3 22 2.8 16.5 C8.5 18.5 11.8 22.5 11.8 28Z" fill="currentColor" />
-      <path d="M12 19 C8 16 6.5 11.5 7.5 6.5 C12 9.5 13.5 14 12 19Z" fill="currentColor" />
-      <path d="M15 11 C13 7.5 13 3.5 15.5 .5 C18.5 4 18 8 15 11Z" fill="currentColor" />
-      <path d="M14.5 41 C16.5 36.5 20.5 34 25 34.5 C23 39.5 19 42 14.5 41Z" fill="currentColor" opacity=".85" />
-      <path d="M13 31 C15.5 26.5 19.5 24.5 24 25.5 C21.5 30.5 17.5 32.5 13 31Z" fill="currentColor" opacity=".85" />
-      <path d="M13.5 22 C16 18 20 16.5 24 17.5 C21.5 22 17.5 23.5 13.5 22Z" fill="currentColor" opacity=".85" />
-    </svg>
-  );
-}
-
-/* five of these under the «5,0» on the rating plaque */
-function Star() {
-  return (
-    <svg
-      className="award__star"
-      viewBox="0 0 12 12"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path
-        d="M6 .6 L7.6 4.2 11.5 4.6 8.6 7.2 9.4 11 6 9 2.6 11 3.4 7.2 .5 4.6 4.4 4.2Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-/* mortarboard for the degree plaque */
-function Mortarboard() {
-  return (
-    <svg
-      className="award__cap"
-      viewBox="0 0 52 44"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path d="M26 3 L50 13.5 26 24 2 13.5Z" fill="currentColor" />
-      <path
-        d="M13 18.3 V27 C13 31.2 18.8 34.5 26 34.5 C33.2 34.5 39 31.2 39 27 V18.3 L26 24Z"
-        fill="currentColor"
-        opacity=".85"
-      />
-      <path d="M46 15.2 V25.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="46" cy="28.5" r="2.1" fill="currentColor" />
-    </svg>
-  );
-}
-
-/* the three award plaques — a full-width band under the about grid */
+/* Each plaque is three stacked bands — medal, title, description. The bands are
+   rows on .awards itself and every card subgrids into them, so all three line up
+   band-for-band even when one title wraps deeper than its neighbours. */
 function AwardsBlock() {
   return (
     <div className="awards reveal">
       <div className="award">
         <div className="award__medal" aria-hidden="true">
-          <Laurel />
+          <IconLaurelLeading className="award__laurel" />
           <span className="award__num">№1</span>
-          <Laurel mirrored />
+          <IconLaurelTrailing className="award__laurel" />
         </div>
+        <b className="award__title">Топ-1 по литературе</b>
         <p className="award__text">
-          <b>Топ-1 по литературе</b>
           Уже долгое время — в&nbsp;числе первых репетиторов
           на&nbsp;главном сайте-агрегаторе
         </p>
       </div>
       <div className="award">
         <div className="award__medal award__medal--stack" aria-hidden="true">
-          <span className="award__num">5,0</span>
+          <Icon5CircleFill className="award__rating" />
           <span className="award__stars">
-            <Star /><Star /><Star /><Star /><Star />
+            {Array.from({ length: 5 }, (_, i) => (
+              <IconStarFill className="award__star" key={i} />
+            ))}
           </span>
         </div>
+        <b className="award__title">Средняя оценка — 5&nbsp;из&nbsp;5</b>
         <p className="award__text">
-          <b>Средняя оценка — 5&nbsp;из&nbsp;5</b>
           По отзывам <strong>более 120&nbsp;учеников</strong> за&nbsp;всё
           время — на&nbsp;всех платформах
         </p>
       </div>
       <div className="award">
         <div className="award__medal" aria-hidden="true">
-          <Mortarboard />
+          <IconGraduationcapFill className="award__cap" />
         </div>
+        <b className="award__title">Магистр филологии СПбГУ</b>
         <p className="award__text">
-          <b>Магистр филологии СПбГУ</b>
           Классическое академическое образование — филологический
           факультет, государственный диплом
         </p>
@@ -247,21 +230,6 @@ export function Cta() {
         height="1254"
       />
       <div className="wrap cta__inner">
-        <ol className="process reveal" aria-label="Как мы работаем">
-          <li>
-            <b>Диагностика</b>
-            <span>бесплатное первое занятие: уровень и план до экзамена</span>
-          </li>
-          <li>
-            <b>Система</b>
-            <span>занятия по структуре ЕГЭ, проверка сочинений между уроками</span>
-          </li>
-          <li>
-            <b>Пробники</b>
-            <span>ежемесячный экзамен и доработка слабых мест — до мая</span>
-          </li>
-        </ol>
-
         <div className="cta__box reveal" id="composer">
           <h2>Начнём <em>со света</em></h2>
           <p>

@@ -1,0 +1,216 @@
+/* ---------- Essay: the expert's pen, live ---------- */
+.essay {
+    position: relative;
+    overflow: hidden;
+}
+.essay__lede {
+    max-width: 52ch;
+    margin: 1.6rem 0 0;
+}
+.essay__grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: start;
+}
+.essay__paper {
+    position: relative;
+    margin: 0;
+    background: linear-gradient(175deg, #f4ead9, #e9dcc6);
+    color: #2b171d;
+    font-size: var(--text-lede);
+    line-height: 1.75;
+    padding: clamp(1.6rem, 3vw, 2.8rem) clamp(1.5rem, 3vw, 2.6rem)
+        clamp(4.5rem, 6vw, 5.5rem);
+    transform: rotate(-1.3deg);
+    box-shadow: var(--shadow);
+    border-radius: 3px;
+}
+.essay__paper p {
+    margin: 0 0 1.2em;
+}
+.essay__paper p:last-of-type {
+    margin-bottom: 0;
+}
+.essay__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-family: var(--font-sans);
+    font-size: var(--label-xs);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: #8a6a58;
+    border-bottom: 1px solid rgba(43, 23, 29, 0.18);
+    padding-bottom: 1rem;
+    margin-bottom: 1.6rem;
+}
+/* the marked phrase: highlight sweeps in left→right like a pen stroke */
+.essay__mark {
+    position: relative;
+    color: inherit;
+    /* reset the <mark> UA yellow; the highlighter sweeps in on scroll instead.
+     no border here — the red wavy underline is drawn by the pen cursor */
+    background-color: transparent;
+    background-image: linear-gradient(
+        rgba(255, 214, 46, 0.55),
+        rgba(255, 214, 46, 0.55)
+    );
+    background-repeat: no-repeat;
+    background-size: 0% 88%;
+    background-position: 0 60%;
+    /* clone so the highlight hugs each line fragment when the mark wraps */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.essay__mark.on {
+    background-size: 100% 88%;
+}
+/* left/top are set in JS to the top-right of the mark's first line, because
+   an abs-positioned child of a wrapped inline has an unreliable containing
+   block in Chrome; the transform only nudges to the corner and animates in */
+.essay__flag {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 0.58em;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-sans);
+    font-style: normal;
+    background: var(--btn);
+    color: #f8e9ec;
+    border-radius: 50%;
+    transform: translate(-38%, -52%) scale(0);
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s;
+}
+.essay__mark.on .essay__flag {
+    transform: translate(-38%, -52%) scale(1);
+}
+/* verdict stamp */
+.essay__stamp {
+    position: absolute;
+    right: clamp(1rem, 3vw, 2.4rem);
+    bottom: clamp(1rem, 2.5vw, 2rem);
+    display: grid;
+    justify-items: center;
+    gap: 0.2rem;
+    padding: 0.9em 1.6em;
+    border: 2px solid rgba(165, 43, 70, 0.65);
+    border-radius: 10px;
+    color: #a52b46;
+    transform: rotate(-7deg);
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -0.15'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -0.15'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+}
+.essay__stamp span {
+    font-size: var(--label-xs);
+    letter-spacing: 0.34em;
+}
+.essay__stamp b {
+    font-size: var(--label-sm);
+    letter-spacing: 0.18em;
+    font-weight: 400;
+}
+/* margin notes */
+.essay__notes {
+    display: grid;
+    gap: clamp(1.2rem, 2.2vw, 1.8rem);
+    padding-top: clamp(0.5rem, 2vw, 2rem);
+}
+.essay__note {
+    /* the flag is centred on the eyebrow's first line box, so both the line
+       height and the note's top padding have to be readable from here */
+    --flag-size: 24px;
+    --crit-line: 1.1rem;
+    --note-pad-top: 0.2rem;
+    position: relative;
+    border-left: 2px solid var(--accent-dim);
+    padding: var(--note-pad-top) 0 0.2rem 1.4rem;
+    opacity: 0;
+    transform: translateX(22px);
+    transition:
+        opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+        transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.essay__note.on {
+    opacity: 1;
+    transform: none;
+}
+.essay__note-flag {
+    position: absolute;
+    left: -13px;
+    top: calc(
+        var(--note-pad-top) + (var(--crit-line) - var(--flag-size)) / 2
+    );
+    width: var(--flag-size);
+    height: var(--flag-size);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-sans);
+    font-size: var(--label-xs);
+    background: var(--btn);
+    color: #f8e9ec;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px var(--bg);
+}
+.essay__crit {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: var(--label-sm);
+    line-height: var(--crit-line);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+.essay__note b {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--disp-2xs);
+    letter-spacing: 0.01em;
+}
+.essay__note p {
+    margin: 0.5rem 0 0;
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+}
+.essay__moral {
+    margin: clamp(1rem, 2vw, 1.6rem) 0 0;
+    font-style: italic;
+    font-size: var(--text-lg);
+    color: var(--ink-soft);
+    max-width: 40ch;
+}
+.essay__moral em {
+    color: var(--accent);
+    font-style: italic;
+}
+@media (max-width: 900px) {
+    .essay__grid {
+        grid-template-columns: 1fr;
+    }
+    .essay__paper {
+        transform: rotate(-0.8deg);
+        max-width: 560px;
+    }
+    .essay__notes {
+        padding-top: 1rem;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .essay__mark,
+    .essay__flag,
+    .essay__note {
+        transition: none;
+    }
+}
+

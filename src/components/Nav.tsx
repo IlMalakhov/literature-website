@@ -18,7 +18,7 @@ export function Nav() {
           <small>Литература · ЕГЭ</small>
         </a>
         <a className="nav__cta" href="#composer">
-          Написать в Telegram <span className="arrow">→</span>
+          Написать в Telegram
         </a>
       </div>
     </nav>

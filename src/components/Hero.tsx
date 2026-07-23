@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
-import { workSrc, workSrcSet } from "../data";
 import { SpinBadge } from "./SpinBadge";
 import { ParadeStage } from "./ParadeStage";
+import { IconArrowDown, IconArrowForward } from "./Icons";
 
 export function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -33,40 +33,39 @@ export function Hero() {
     <header className="hero" id="top" ref={root}>
       <div className="wrap">
         <div className="hero__stage">
-          <div className="hero__bloom" aria-hidden="true">
-            <img
-              src={workSrc("the-cherry-orchard")}
-              srcSet={workSrcSet("the-cherry-orchard")}
-              sizes="(max-width: 940px) 58vw, (max-width: 1476px) 42vw, 620px"
-              alt=""
-              data-mouse="18"
-              width="1254"
-              height="1254"
-              fetchPriority="high"
-              decoding="async"
-            />
+          {/* the badge is positioned against this wrapper, not the stage: it
+              shrink-wraps the title, so the badge keeps the same relationship
+              to «сдаётся.» however the stage flexes */}
+          <div className="hero__titlewrap">
+            <h1 className="hero__title">
+              <span className="mask hero__l1"><span className="mask__in">Литература</span></span>
+              <span className="mask hero__l2"><span className="mask__in"><em>сдаётся.</em></span></span>
+            </h1>
+
+            <SpinBadge extraClass="badge--hero" />
           </div>
-
-          <h1 className="hero__title">
-            <span className="mask hero__l1"><span className="mask__in">Литература</span></span>
-            <span className="mask hero__l2"><span className="mask__in"><em>сдаётся.</em></span></span>
-          </h1>
-
-          <SpinBadge extraClass="badge--hero" />
         </div>
 
         <div className="hero__foot">
           <div>
             <p className="lede hero__lede">
-              Тем, кто умеет её доказывать. Разбираем классику от «Горя от ума»
-              до «Мастера и Маргариты», пишем сочинения по критериям ФИПИ и
-              выходим на экзамен без сюрпризов.
+              Давай расскажу как...{" "}
+              <span className="hero__scroll">
+                Листай вниз
+                <IconArrowDown className="hero__scroll-arrow" aria-hidden="true" />
+              </span>
             </p>
             <div className="hero__cta">
-              <a className="btn btn--lg" href="#composer">
-                Записаться на диагностику <span className="arrow">→</span>
+              <a className="ticket" href="#composer">
+                <span className="ticket__main">
+                  <b>Записаться</b>
+                  <i>диагностика · 60 минут · бесплатно</i>
+                </span>
+                <span className="ticket__stub" aria-hidden="true">
+                  <IconArrowForward />
+                </span>
               </a>
-              <a className="link-under" href="#program">Программа</a>
+              <a className="link-plain" href="#program">Программа</a>
             </div>
           </div>
           <div className="hero__aside">
@@ -74,12 +73,12 @@ export function Hero() {
             <span className="hero__fact">
               учеников поступают на бюджет гуманитарных факультетов
             </span>
-            <span className="hero__coords">59.93° N · 30.33° E — Петербург → онлайн</span>
           </div>
         </div>
       </div>
 
-      {/* full-bleed street: figures enter and exit past the screen edges */}
+      {/* full-bleed street, closing the hero: its cobbles are the bottom edge
+          of the first viewport */}
       <ParadeStage />
     </header>
   );

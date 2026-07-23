@@ -10,7 +10,7 @@ import { Essay } from "./components/Essay";
 import { Roadmap } from "./components/Roadmap";
 import { Faq } from "./components/Faq";
 import {
-  Marquee, Stats, Quotes, About, Cta, Footer,
+  Marquee, Manifesto, Quotes, About, Cta, Footer,
 } from "./components/Sections";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -156,8 +156,8 @@ export function App() {
       <div className="rail" aria-hidden="true">Литература · ЕГЭ · 2026/27</div>
       <Nav />
       <Hero />
+      <Manifesto />
       <Marquee />
-      <Stats />
       <Program />
       <Essay />
       <Quotes />

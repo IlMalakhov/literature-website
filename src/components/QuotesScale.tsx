@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { AVG_SCORE, QUOTES, QUOTES_FILLER } from "../data";
+import { IconArrowForward } from "./Icons";
 
 /* «Шкала баллов»: навигация по отзывам через само число. Горизонтальная
    шкала 78–100, засечки — реальные результаты учеников (высота засечки —
@@ -224,7 +225,11 @@ export function QuotesScale() {
         </span>
         <span className="qsc__needle" ref={needle} style={{ left: `${pct(score)}%` }} aria-hidden="true" />
       </div>
-      <p className="qsc__hint">потяните шкалу — или листайте стрелками ← →</p>
+      <p className="qsc__hint">
+        потяните шкалу — или листайте стрелками{" "}
+        <IconArrowForward className="qsc__hint-arrow qsc__hint-arrow--back" aria-hidden="true" />
+        <IconArrowForward className="qsc__hint-arrow" aria-hidden="true" />
+      </p>
     </div>
   );
 }

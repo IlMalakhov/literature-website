@@ -1,0 +1,51 @@
+/* ---------- Buttons & links ---------- */
+.btn {
+    font-family: var(--font-sans);
+    font-size: var(--label-md);
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8em;
+    padding: 1.2em 2em;
+    border-radius: 999px;
+    background: var(--btn);
+    color: #f8e9ec;
+    border: 1px solid var(--accent-dim);
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+}
+.btn:hover {
+    background: var(--btn-hover);
+    border-color: #fff;
+}
+.btn--lg {
+    padding: 1.25em 2.2em;
+    font-size: var(--label-lg);
+}
+.btn--ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border-color: var(--line);
+}
+.btn--ghost:hover {
+    background: transparent;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.link-under {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: var(--text-quote);
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--accent-dim);
+    padding-bottom: 2px;
+    transition: color 0.2s;
+}
+.link-under:hover {
+    color: var(--accent);
+}
+

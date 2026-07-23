@@ -1,0 +1,78 @@
+/* ---------- Nav ----------
+   Fixed, not sticky, and hidden until the first scroll: out of flow it costs
+   the hero no height, so the hero owns the whole first viewport down to the
+   parade's cobbles. Nav.tsx adds .scrolled past 20px, which drops the bar in
+   and lifts it back out on the way home. */
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--bg) 76%, transparent);
+    border-bottom: 1px solid transparent;
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+        opacity 0.3s,
+        border-color 0.3s;
+}
+.nav.scrolled {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    border-color: var(--line);
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav {
+        transition:
+            opacity 0.2s,
+            border-color 0.3s;
+    }
+}
+.nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--nav-h);
+    padding-block: 1.1rem;
+}
+.brand {
+    font-family: var(--font-display);
+    font-size: var(--disp-2xs);
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+.brand small {
+    font-family: var(--font-sans);
+    font-size: var(--label-xs);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    /* optical: centers the caps on the serif's x-height band */
+    transform: translateY(-1px);
+}
+.nav__cta {
+    font-family: var(--font-sans);
+    font-size: var(--label-sm);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border-bottom: 1px solid var(--accent-dim);
+    padding-bottom: 4px;
+    display: inline-flex;
+    transition: color 0.2s;
+}
+.nav__cta:hover {
+    color: var(--accent);
+}
+@media (max-width: 620px) {
+    .brand small {
+        display: none;
+    }
+}
+

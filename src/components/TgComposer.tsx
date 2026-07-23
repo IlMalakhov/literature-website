@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as Select from "@radix-ui/react-select";
 import { TG_GAPS, TG_HANDLE, buildTgMessage, tgUrl } from "../data";
 import type { TgDraft } from "../data";
+import { IconChevronDown } from "./Icons";
 
 const GRADES = ["9", "10", "11"] as const;
 
@@ -47,7 +48,9 @@ function GradePick({ value, onChange }: { value: string; onChange: (v: string) =
     <Select.Root value={value || undefined} onValueChange={onChange}>
       <Select.Trigger className="tgc__gap tgc__pick" aria-label="Класс">
         <Select.Value placeholder="11" />
-        <Select.Icon className="tgc__chev">▾</Select.Icon>
+        <Select.Icon className="tgc__chev">
+          <IconChevronDown />
+        </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
         <Select.Content className="tgcsel" position="popper" sideOffset={7} align="center">

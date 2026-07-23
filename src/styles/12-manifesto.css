@@ -1,0 +1,39 @@
+/* ---------- Manifesto + stats ---------- */
+.manifest {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--sect-pad);
+    padding-bottom: clamp(2.5rem, 5vw, 5rem);
+}
+.manifest__bg {
+    position: absolute;
+    right: -14%;
+    top: -16%;
+    width: min(72vw, 940px);
+    opacity: 0.09;
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(
+        60% 60% at 50% 45%,
+        #000 40%,
+        transparent 74%
+    );
+    mask-image: radial-gradient(60% 60% at 50% 45%, #000 40%, transparent 74%);
+}
+.manifest__title {
+    margin-top: 1.2rem;
+}
+.manifest__title span {
+    display: block;
+}
+.manifest__small {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: var(--h-xs);
+    color: var(--ink-soft);
+}
+.manifest__big {
+    font-size: var(--h-2xl);
+    line-height: 1;
+}
+

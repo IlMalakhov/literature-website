@@ -2,14 +2,20 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ROAD_STEPS } from "../data";
+import { RoadCal } from "./RoadCal";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* «Маршрут года»: a rose thread draws itself down the middle of the page as
    the reader scrolls; milestones light up as the thread reaches them.
    Zigzag on desktop, single left rail on mobile (CSS). */
+/* Calendars are decor, not list items: they hang off their step but sit
+   outside the flow, drifting past the edges of the zigzag. */
 export function Roadmap() {
   const root = useRef<HTMLElement>(null);
+
+  // running index so CSS can address each calendar as [data-cal="N"]
+  let calSeen = 0;
 
   useLayoutEffect(() => {
     const section = root.current;
@@ -78,6 +84,7 @@ export function Roadmap() {
                   )}
                 </h3>
                 <p>{s.text}</p>
+                {s.cal && <RoadCal cal={s.cal} index={++calSeen} />}
               </li>
             ))}
           </ol>

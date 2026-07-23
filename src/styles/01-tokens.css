@@ -1,0 +1,86 @@
+/* =========================================================================
+   Дарья Федорова — репетитор по литературе · ЕГЭ
+   «Тёмный кабинет», вторая редакция: Oranienbaum display + Unbounded labels,
+   rose accent, free-floating imagery, scroll-driven depth.
+   ========================================================================= */
+
+/* ---------- Tokens ---------- */
+:root {
+    --bg: #120a0e;
+    --bg-2: #0c0608;
+    --surface: #1e1116;
+    --ink: #f0e5d8;
+    --ink-soft: #b3a096;
+    --line: rgba(240, 229, 216, 0.14);
+    --line-soft: rgba(240, 229, 216, 0.07);
+
+    --accent: #ee5d78; /* rose — accents, italics, numerals */
+    --accent-dim: rgba(238, 93, 120, 0.38);
+    --btn: #a52b46; /* deep rose — fills */
+    --btn-hover: #c23558;
+    --wine-deep: #43101e;
+
+    --font-display: "Oranienbaum", Georgia, serif;
+    --font-serif: "Old Standard TT", Georgia, serif;
+    --font-sans: "Unbounded", system-ui, sans-serif;
+
+    /* ---------- Type scale ----------
+     Every font-size below comes from this ramp. Deliberate exceptions,
+     commented at the use site: em-relative glyph sizes, the badge's SVG
+     viewBox units, the 19px body baseline, and two mobile fit overrides. */
+
+    /* labels — Unbounded, uppercase + tracked; 10px is the legibility floor */
+    --label-xs: 0.625rem; /* 10px — micro meta: coords, ticks, stamps, hints */
+    --label-sm: 0.6875rem; /* 11px — standard label: eyebrows, nav, stat/award captions */
+    --label-md: 0.75rem; /* 12px — buttons, process heads */
+    --label-lg: 0.8125rem; /* 13px — large button */
+
+    /* prose — Old Standard TT; body baseline is 19px and sits above --text-lg */
+    --text-sm: 1rem; /* 16px — secondary prose, lists, step copy */
+    --text-md: 1.06rem; /* 17px — card/answer prose */
+    --text-lg: 1.14rem; /* 18px — emphasized lines, footer name */
+    --text-quote: 1.45rem; /* italic serif accents: links, marquee */
+    --text-lede: clamp(
+        1.1rem,
+        1.5vw,
+        1.3rem
+    ); /* ledes, essay paper, quote cards */
+
+    /* display — Oranienbaum, fixed */
+    --disp-2xs: 1.35rem; /* brand, numerals-in-text, avatars */
+    --disp-xs: 1.7rem; /* badge core, compact award numbers */
+    --disp-sm: 2.5rem; /* hero ratio, award numbers */
+
+    /* display — fluid heading ramp */
+    --h-2xs: clamp(1.25rem, 2.6vw, 1.9rem); /* faq question */
+    --h-xs: clamp(1.4rem, 2.6vw, 2.2rem); /* manifesto small line */
+    --h-sm: clamp(1.7rem, 3vw, 2.6rem); /* roadmap step */
+    --h-md: clamp(2.6rem, 5vw, 4.6rem); /* program panel */
+    --h-lg: clamp(2.6rem, 6vw, 5.2rem); /* section heads */
+    --h-xl: clamp(3rem, 7.5vw, 6.6rem); /* about title, cta, stat numbers */
+    --h-2xl: clamp(
+        3.6rem,
+        9.5vw,
+        8.5rem
+    ); /* manifesto big line, score numeral */
+    /* hero title — the only heading that answers to viewport HEIGHT as well:
+       the hero is exactly one viewport tall now (parade included), so on short
+       wide screens the width-driven size has to give way or the street pays. */
+    --h-hero: clamp(3.4rem, min(12.5vw, 20vh), 12rem);
+    --h-ghost: clamp(9rem, 34vh, 17rem); /* program ghost numeral */
+
+    --maxw: 1280px;
+    --nav-h: 4.3rem; /* height of the fixed nav bar; it is out of flow, so the
+                        hero is sized against the full viewport, not against this */
+    --anchor-top: 90px; /* clearance below the sticky nav that anchor jumps land at;
+                         drives scroll-padding-top, the Program pin start (read in
+                         JS), and the pinned view height — keep them in lockstep */
+    --pad: clamp(1.25rem, 4vw, 2.75rem);
+    --shadow: 0 34px 70px -30px rgba(0, 0, 0, 0.85);
+    --sect-pad: clamp(5rem, 11vw, 11rem);
+
+    --badge-bg: var(--btn);
+    --badge-fg: #f6e3e6;
+    --fig-c: #ecdcc8;
+}
+

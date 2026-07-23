@@ -1,0 +1,167 @@
+/* ---------- Program: pinned horizontal scroll ---------- */
+.hp {
+    padding-top: clamp(2.5rem, 5.5vw, 5.5rem);
+}
+.hp__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: clamp(1.5rem, 3vh, 3rem);
+}
+.hp__head h2 {
+    font-size: var(--h-lg);
+    margin-top: 1rem;
+}
+.hp__hint {
+    font-family: var(--font-sans);
+    font-size: var(--label-xs);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    padding-bottom: 1rem;
+    white-space: nowrap;
+}
+.hp__hint-arrow {
+    flex: none;
+    width: 1.15em;
+    height: auto;
+    color: var(--accent);
+    animation: hint-x 1.6s ease-in-out infinite;
+}
+@keyframes hint-x {
+    50% {
+        transform: translateX(9px);
+    }
+}
+
+/* Fill from the nav clearance to the bottom of the viewport: the view is pinned
+   with its top at --anchor-top, so this puts its bottom progress bar at the
+   bottom of the screen on any height (a fixed height left the bar mid-screen on
+   tall displays). Mobile overrides this to auto for the stacked layout. */
+.hp__view {
+    position: relative;
+    height: calc(100svh - var(--anchor-top));
+    overflow: hidden;
+}
+.hp__track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding-left: var(--pad);
+    will-change: transform;
+}
+.hp__panel {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(62vw, 840px);
+    margin-right: 7vw;
+    padding-left: clamp(1.6rem, 2.5vw, 2.6rem);
+    border-left: 1px solid var(--line);
+}
+.hp__ghost {
+    position: absolute;
+    left: 0.5rem;
+    top: -14%;
+    font-family: var(--font-display);
+    font-size: var(--h-ghost);
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--accent-dim);
+    pointer-events: none;
+}
+.hp__panel > img {
+    position: absolute;
+    right: -6%;
+    top: -6%;
+    width: 54%;
+    transform: rotate(3deg);
+    filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.55));
+    z-index: 1;
+}
+.hp__panel:nth-child(even) > img {
+    transform: rotate(-2.5deg);
+}
+.hp__body {
+    position: relative;
+    z-index: 2;
+    max-width: 30rem;
+    padding-top: clamp(3rem, 14vh, 7rem);
+}
+.hp__body h3 {
+    font-size: var(--h-md);
+    margin: 0.6rem 0 1rem;
+}
+.hp__body p {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+.hp__body ul {
+    list-style: none;
+    padding: 0;
+    margin: 1.4rem 0 0;
+    font-size: var(--text-sm);
+}
+.hp__body li {
+    padding: 0.5rem 0 0.5rem 1.7rem;
+    border-top: 1px dashed var(--line);
+    position: relative;
+}
+.hp__body li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+}
+.hp__bar {
+    position: absolute;
+    left: var(--pad);
+    right: var(--pad);
+    bottom: 1.3rem;
+    height: 1px;
+    background: var(--line);
+}
+.hp__bar i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(0);
+}
+@media (max-width: 899px) {
+    .hp__view {
+        height: auto;
+        overflow: visible;
+    }
+    .hp__track {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4rem;
+        padding-inline: var(--pad);
+    }
+    .hp__panel {
+        width: auto;
+        margin-right: 0;
+    }
+    .hp__panel > img {
+        position: static;
+        width: min(320px, 72%);
+        margin: 0 0 -1.5rem auto;
+    }
+    .hp__ghost {
+        font-size: 7rem;
+        top: -2.4rem;
+    } /* fit override: stacked mobile layout */
+    .hp__body {
+        padding-top: 1rem;
+    }
+    .hp__bar,
+    .hp__hint {
+        display: none;
+    }
+}
+

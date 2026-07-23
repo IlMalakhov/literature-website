@@ -1,0 +1,25 @@
+/* ---------- Layout ---------- */
+.wrap {
+    width: 100%;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 var(--pad);
+    position: relative;
+    z-index: 1;
+}
+section,
+header.hero {
+    position: relative;
+    z-index: 1;
+}
+.section-pad {
+    padding-block: var(--sect-pad);
+}
+.sec-head {
+    margin-bottom: clamp(3rem, 6vw, 5rem);
+}
+.sec-head h2 {
+    font-size: var(--h-lg);
+    margin-top: 1rem;
+}
+
