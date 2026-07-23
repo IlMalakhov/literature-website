@@ -77,26 +77,41 @@ export function runParadeIntro(stage: HTMLElement, startLoop: () => void): () =>
   };
 
   let ctx: gsap.Context | undefined;
+  let tl: gsap.core.Timeline | undefined;
+  const syncVisibility = () => {
+    if (!tl || released) return;
+    document.hidden ? tl.pause() : tl.resume();
+  };
+  const stopWatchingVisibility = () =>
+    document.removeEventListener("visibilitychange", syncVisibility);
+  document.addEventListener("visibilitychange", syncVisibility);
+
   ctx = gsap.context(() => {
     gsap.set(stage, { perspective: 1000, perspectiveOrigin: "50% 100%" });
 
-    const tl = gsap.timeline({
+    const timeline = gsap.timeline({
       delay: DELAY,
-      onComplete: () => { release(); ctx?.revert(); },
+      onComplete: () => {
+        stopWatchingVisibility();
+        release();
+        ctx?.revert();
+      },
     });
+    tl = timeline;
+    syncVisibility();
 
     if (cobbles) {
-      tl.fromTo(
+      timeline.fromTo(
         cobbles,
         { scaleY: 0, transformOrigin: "50% 100%" },
         { scaleY: 1, duration: 0.55, ease: "power2.out" },
         0,
       );
     }
-    if (stars) tl.from(stars, { opacity: 0, duration: 1.1, ease: "none" }, 0.4);
+    if (stars) timeline.from(stars, { opacity: 0, duration: 1.1, ease: "none" }, 0.4);
 
     const stand = (el: HTMLElement, at: number, duration = 0.9) =>
-      tl.fromTo(
+      timeline.fromTo(
         el,
         { rotationX: -87, opacity: 0, transformOrigin: "50% 100%" },
         {
@@ -111,11 +126,10 @@ export function runParadeIntro(stage: HTMLElement, startLoop: () => void): () =>
     hinge.forEach((el, i) => stand(el, FIRST + i * STEP));
     // the lamp last and alone, a beat after the fog it used to rise alongside
     if (lamp) stand(lamp, FIRST + hinge.length * STEP + LAMP_BEAT, 1);
-
-    /* the first figure needs a beat to walk in from offscreen, so let the parade
-       off its leash just before the last plate settles */
-    tl.call(release, undefined, Math.max(0, tl.duration() - 0.45));
   }, stage);
 
-  return () => ctx?.revert();
+  return () => {
+    stopWatchingVisibility();
+    ctx?.revert();
+  };
 }

@@ -1,8 +1,19 @@
 /* ---------- Custom cursor ---------- */
 /* the native pointer disappears everywhere except text fields, where the
    custom sprite hides itself and the caret cursor takes over */
-.cc-on,
-.cc-on * {
+.cc-on {
+    cursor: none !important;
+}
+.cc-on :is(
+    a,
+    button,
+    summary,
+    label,
+    [role="button"],
+    [role="option"],
+    [role="slider"],
+    [data-mark]
+) {
     cursor: none !important;
 }
 .cc-on input,
@@ -16,6 +27,7 @@
     inset: 0;
     z-index: 200;
     pointer-events: none;
+    contain: strict;
 }
 .cursor__ink {
     position: absolute;
@@ -43,4 +55,3 @@
     image-rendering: pixelated;
     filter: none;
 }
-

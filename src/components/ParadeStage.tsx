@@ -33,13 +33,12 @@ function Figure({ k, msg }: { k: FigureKey; msg: string }) {
 
 /**
  * Pixel shadow-theatre street. Figures are sprite strips (public/parade/*.png,
- * equal cells, feet on the bottom row) cycled with steps(). Walk cycles run
- * unconditionally — a figure is only ever moving or offscreen, and gating
- * them on GSAP callbacks proved fragile: onStart stops re-firing on timeline
- * repeats, which froze every figure from the second loop on. Each figure
- * crosses the stage on the slow-mo ease, speaks its bubble mid-stage, and
- * strides off. Dim strollers and a seagull cross continuously; the timeline
- * only plays while the stage is on screen.
+ * equal cells, feet on the bottom row) cycled with steps(). Their shared CSS
+ * walk cycles pause with the whole stage rather than on individual GSAP
+ * callbacks: onStart stops re-firing on timeline repeats, which used to freeze
+ * every figure from the second loop on. Each figure crosses the stage on the
+ * slow-mo ease, speaks its bubble mid-stage, and strides off. Dim strollers
+ * and a seagull cross continuously while the stage is active.
  *
  * On first paint the street unfolds like a pop-up book (see paradeIntro.ts)
  * alongside the hero copy, and nothing walks until it is over: `sync()` gates
@@ -58,6 +57,7 @@ export function ParadeStage() {
     });
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let disposeIntro: (() => void) | null = null;
+    let disposeVisibility: (() => void) | null = null;
 
     const ctx = gsap.context(() => {
       if (reduced) {
@@ -113,7 +113,7 @@ export function ParadeStage() {
          that has not finished assembling. */
       const ambient: gsap.core.Tween[] = [];
 
-      // dim strollers drifting across the back street, never stopping
+      // dim strollers drifting across the back street while the stage is active
       stage.querySelectorAll<HTMLElement>(".bgfig").forEach((el, i) => {
         ambient.push(gsap.fromTo(
           el,
@@ -148,20 +148,41 @@ export function ParadeStage() {
 
       let inView = false;
       let entered = false;
-      const sync = () => (inView && entered ? tl.play() : tl.pause());
+      const sync = () => {
+        const documentVisible = !document.hidden;
+        const active = inView && entered && documentVisible;
+
+        // Keep the entrance visually unchanged. Once it has finished, pause
+        // the CSS sprite/fog/lamp cycles whenever the street cannot be seen.
+        stage.classList.toggle(
+          "stage--paused",
+          !documentVisible || (entered && !inView),
+        );
+
+        active ? tl.play() : tl.pause();
+        ambient.forEach((t) => (active ? t.play() : t.pause()));
+      };
       const startLoop = () => {
         entered = true;
-        ambient.forEach((t) => t.play());
         sync();
+      };
+      const onVisibilityChange = () => sync();
+      document.addEventListener("visibilitychange", onVisibilityChange);
+      disposeVisibility = () => {
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+        stage.classList.remove("stage--paused");
       };
 
       // run the parade only while the street is on screen
-      ScrollTrigger.create({
+      const streetTrigger = ScrollTrigger.create({
         trigger: stage,
         start: "top bottom",
         end: "bottom top",
         onToggle: (self) => { inView = self.isActive; sync(); },
+        onRefresh: (self) => { inView = self.isActive; sync(); },
       });
+      inView = streetTrigger.isActive;
+      sync();
 
       // reduced motion never gets here; everyone else gets the entrance first
       disposeIntro = runParadeIntro(stage, startLoop);
@@ -169,6 +190,7 @@ export function ParadeStage() {
 
     return () => {
       disposeIntro?.();
+      disposeVisibility?.();
       ctx.revert();
     };
   }, []);

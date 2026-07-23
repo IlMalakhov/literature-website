@@ -86,8 +86,11 @@ export type WorkImageWidth = 480 | 768 | 1254;
 export const workSrc = (slug: string, width: WorkImageWidth = 1254) =>
   width === 1254 ? `/works/${slug}.webp` : `/works/${slug}-${width}.webp`;
 
-export const workSrcSet = (slug: string) =>
-  ([480, 768, 1254] as const)
+export const workSrcSet = (
+  slug: string,
+  widths: ReadonlyArray<WorkImageWidth> = [480, 768, 1254],
+) =>
+  widths
     .map((width) => `${workSrc(slug, width)} ${width}w`)
     .join(", ");
 

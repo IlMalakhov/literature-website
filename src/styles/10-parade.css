@@ -4,14 +4,24 @@
    copy above needs more room than the viewport has, flex-shrink trims this box
    and, since everything in here is anchored to `bottom`, the crop eats sky off
    the top rather than lifting the pavement. The floor keeps the tallest figure
-   (~150px + its 22px curb offset) from losing its head. */
+   (~150px + its 22px curb offset) from losing its head.
+
+   Clipped sideways only. Figures walk on from ±320px outside the box, so the
+   horizontal clip has to stay — but a shrunken street has less headroom than a
+   speech bubble needs (at 375×560 the box is 145px and the bubble starts at
+   -31px), and clipping the top edge is what was eating the bubbles above the
+   hero copy. Nothing draws the top edge — the stage has no background, the sky
+   IS the page — so a bubble crossing it just keeps going, over the copy.
+   `clip`, not `hidden`: `hidden` on one axis forces the other to `auto`, and the
+   street would scroll instead of overflowing. */
 .stage {
     position: relative;
     flex: 0 1 auto;
     height: clamp(240px, 36vh, 320px);
     min-height: clamp(150px, 20vh, 210px);
     margin-top: clamp(1.4rem, 3vw, 2.4rem);
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
 }
 .stage::before {
     content: "";
@@ -463,6 +473,16 @@
         min-height: 132px;
     }
 }
+
+/* Recurring motion is suspended as one unit when the street is offscreen or
+   its tab is hidden. The class is not applied during the pop-up entrance, so
+   that first impression stays exactly as designed. */
+.stage--paused .sprite,
+.stage--paused .fog__in,
+.stage--paused .lamp__glow {
+    animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .sprite,
     .fog__in,
@@ -474,4 +494,3 @@
         display: none;
     }
 }
-

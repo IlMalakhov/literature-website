@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { AVG_SCORE, WORKS, workSrc } from "../data";
+import { AVG_SCORE, WORKS, workSrc, workSrcSet } from "../data";
 import { IconArrowForward } from "./Icons";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -86,26 +86,128 @@ const CELLS: ReadonlyArray<Cell> = [
 ];
 
 /* Полка кодификатора: движение мыши листает натюрморты /works/ */
+const CARD_IMAGE_WIDTHS = [480, 768] as const;
+const INITIAL_SHELF_INDEX = 4;
+
 function WorksShelf({ label, cap }: { label?: string; cap?: string }) {
-  const [i, setI] = useState(4);
-  const onMove = (e: React.MouseEvent<HTMLElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const idx = Math.floor(((e.clientX - r.left) / r.width) * WORKS.length);
-    setI(Math.min(WORKS.length - 1, Math.max(0, idx)));
+  const [i, setI] = useState(INITIAL_SHELF_INDEX);
+  const current = useRef(i);
+  const requested = useRef(i);
+  const activeImage = useRef<0 | 1>(0);
+  const imageA = useRef<HTMLImageElement>(null);
+  const imageB = useRef<HTMLImageElement>(null);
+  const requestToken = useRef(0);
+  const rect = useRef<DOMRect | null>(null);
+  const latestX = useRef(0);
+  const moveFrame = useRef(0);
+
+  useLayoutEffect(() => {
+    const invalidateRect = () => { rect.current = null; };
+    addEventListener("scroll", invalidateRect, { passive: true });
+    addEventListener("resize", invalidateRect, { passive: true });
+    return () => {
+      removeEventListener("scroll", invalidateRect);
+      removeEventListener("resize", invalidateRect);
+      cancelAnimationFrame(moveFrame.current);
+      requestToken.current++;
+      [imageA.current, imageB.current].forEach((image) => {
+        if (!image) return;
+        image.onload = null;
+        image.onerror = null;
+      });
+    };
+  }, []);
+
+  const showWork = (next: number) => {
+    if (next === requested.current) return;
+    requested.current = next;
+    const token = ++requestToken.current;
+    if (next === current.current) return;
+
+    const images = [imageA.current, imageB.current] as const;
+    const incomingSlot = activeImage.current === 0 ? 1 : 0;
+    const incoming = images[incomingSlot];
+    const outgoing = images[activeImage.current];
+    if (!incoming || !outgoing) return;
+
+    let committed = false;
+    const commit = () => {
+      if (committed || token !== requestToken.current || requested.current !== next) return;
+      committed = true;
+      incoming.style.opacity = "1";
+      outgoing.style.opacity = "0";
+      activeImage.current = incomingSlot;
+      current.current = next;
+      setI(next);
+    };
+    const ready = () => {
+      if (typeof incoming.decode === "function") incoming.decode().then(commit, commit);
+      else commit();
+    };
+
+    incoming.onload = ready;
+    incoming.onerror = () => {
+      if (token === requestToken.current) requested.current = current.current;
+    };
+    incoming.loading = "eager";
+    incoming.removeAttribute("srcset");
+    incoming.removeAttribute("sizes");
+    incoming.src = workSrc(WORKS[next].slug, 480);
+    if (incoming.complete && incoming.naturalWidth) ready();
   };
+
+  const selectFromPointer = () => {
+    moveFrame.current = 0;
+    const bounds = rect.current;
+    if (!bounds?.width) return;
+    const idx = Math.floor(((latestX.current - bounds.left) / bounds.width) * WORKS.length);
+    const next = Math.min(WORKS.length - 1, Math.max(0, idx));
+    showWork(next);
+  };
+
+  const onEnter = (e: React.MouseEvent<HTMLElement>) => {
+    rect.current = e.currentTarget.getBoundingClientRect();
+    latestX.current = e.clientX;
+  };
+  const onMove = (e: React.MouseEvent<HTMLElement>) => {
+    rect.current ??= e.currentTarget.getBoundingClientRect();
+    latestX.current = e.clientX;
+    if (!moveFrame.current) moveFrame.current = requestAnimationFrame(selectFromPointer);
+  };
+  const onLeave = () => {
+    rect.current = null;
+    cancelAnimationFrame(moveFrame.current);
+    moveFrame.current = 0;
+  };
+
   const w = WORKS[i];
   return (
-    <a className="bl-works" href="#program" onMouseMove={onMove}>
-      {WORKS.map((wk, k) => (
-        <img
-          key={wk.slug}
-          src={workSrc(wk.slug, 480)}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          style={{ opacity: k === i ? 1 : 0 }}
-        />
-      ))}
+    <a
+      className="bl-works"
+      href="#program"
+      onMouseEnter={onEnter}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
+      <img
+        ref={imageA}
+        src={workSrc(WORKS[INITIAL_SHELF_INDEX].slug, 480)}
+        width={480}
+        height={480}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        style={{ opacity: 1 }}
+      />
+      <img
+        ref={imageB}
+        width={480}
+        height={480}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        style={{ opacity: 0 }}
+      />
       <span className="bl-lb">{label}</span>
       <div className="bl-works__meta">
         <b>«{w.title}»</b>
@@ -157,7 +259,16 @@ function Recto({ cell }: { cell: Cell }) {
     case "img":
       return (
         <>
-          <img src={workSrc(cell.img!, 768)} alt="" loading="lazy" decoding="async" />
+          <img
+            src={workSrc(cell.img!, 480)}
+            srcSet={workSrcSet(cell.img!, CARD_IMAGE_WIDTHS)}
+            sizes="(max-width: 940px) calc((100vw - 3rem) / 2), 16vw"
+            width={768}
+            height={768}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
           <div className="bl-media__meta">
             <span className="bl-lb">{cell.label}</span>
             <span className="bl-cap">{cell.cap}</span>

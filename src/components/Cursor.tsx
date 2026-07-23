@@ -23,10 +23,17 @@ export function Cursor() {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const ok =
-      matchMedia("(pointer: fine)").matches &&
-      !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setEnabled(ok);
+    const finePointer = matchMedia("(pointer: fine)");
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setEnabled(finePointer.matches && !reducedMotion.matches);
+
+    sync();
+    finePointer.addEventListener("change", sync);
+    reducedMotion.addEventListener("change", sync);
+    return () => {
+      finePointer.removeEventListener("change", sync);
+      reducedMotion.removeEventListener("change", sync);
+    };
   }, []);
 
   useEffect(() => {
@@ -41,23 +48,28 @@ export function Cursor() {
     document.documentElement.classList.add("cc-on");
     if (import.meta.env.DEV) (window as unknown as { __gsap: typeof gsap }).__gsap = gsap;
 
-    const dpr = Math.min(devicePixelRatio || 1, 2);
     const resize = () => {
-      cnv.width = innerWidth * dpr;
-      cnv.height = innerHeight * dpr;
+      // A 2× full-viewport canvas contains four times as many pixels. Ink is
+      // soft-edged by design, so 1.5× keeps it crisp without the 4× clear cost.
+      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      cnv.width = Math.round(innerWidth * dpr);
+      cnv.height = Math.round(innerHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.lineCap = ctx.lineJoin = "round";
     };
     resize();
-    addEventListener("resize", resize);
 
     /* ---- state ---- */
     let zone: Zone = "quill";
     let sprite: SpriteName = "quill";
     let overText = false;         // over input/textarea: yield to native caret
     let shown = false;
-    let raw = { x: -100, y: -100 };
-    let prev = { x: -100, y: -100 };
+    const raw = { x: -100, y: -100 };
+    const prev = { x: -100, y: -100 };
+    let pointerDirty = false;
+    let pointerFrame = 0;
+    let ticking = false;
+    let resizeFrame = 0;
     let pressed = false;
     let underline: Element | null = null;
     const ul = { p: 0, a: 0 };          // draw-in progress / fade-out alpha
@@ -76,6 +88,45 @@ export function Cursor() {
     const rotTo = gsap.quickTo(imgs.quill, "rotation", {
       duration: 0.35, ease: "power2.out",
     });
+
+    const applyPointer = () => {
+      if (!pointerDirty) return;
+      pointerDirty = false;
+      if (zone === "pixel") {
+        // grid-snapped, no easing — the sprite moves like it's 1993
+        const off = pressed ? 2 : 0;
+        gsap.set(hold, {
+          x: Math.round((raw.x + off) / 2) * 2,
+          y: Math.round((raw.y + off) / 2) * 2,
+        });
+      } else {
+        xTo(raw.x);
+        yTo(raw.y);
+      }
+    };
+
+    const queuePointer = () => {
+      if (pointerFrame) return;
+      pointerFrame = requestAnimationFrame(() => {
+        pointerFrame = 0;
+        applyPointer();
+        // Only the quill needs per-frame positions for its ink trail. GSAP
+        // carries the red pen between coalesced pointer updates by itself.
+        if (zone === "quill") requestTick();
+      });
+    };
+
+    const requestTick = () => {
+      if (ticking || document.hidden) return;
+      ticking = true;
+      gsap.ticker.add(tick);
+    };
+
+    const stopTick = () => {
+      if (!ticking) return;
+      ticking = false;
+      gsap.ticker.remove(tick);
+    };
 
     const show = (name: SpriteName) => {
       if (name === sprite) return;
@@ -100,24 +151,22 @@ export function Cursor() {
 
     /* ---- pointer plumbing ---- */
     const onMove = (e: PointerEvent) => {
-      raw = { x: e.clientX, y: e.clientY };
+      const coalesced = e.getCoalescedEvents?.();
+      const point = coalesced?.length ? coalesced[coalesced.length - 1] : e;
+      raw.x = point.clientX;
+      raw.y = point.clientY;
       if (!shown) {
         shown = true;
         gsap.set(hold, { x: raw.x, y: raw.y });
-        prev = { ...raw };
+        prev.x = raw.x;
+        prev.y = raw.y;
         gsap.to(hold, { autoAlpha: overText ? 0 : 1, duration: 0.2 });
       }
+      pointerDirty = true;
       if (zone === "pixel") {
-        // grid-snapped, no easing — the sprite moves like it's 1993
-        const off = pressed ? 2 : 0;
-        gsap.set(hold, {
-          x: Math.round((raw.x + off) / 2) * 2,
-          y: Math.round((raw.y + off) / 2) * 2,
-        });
-      } else {
-        xTo(raw.x);
-        yTo(raw.y);
-      }
+        // Preserve the pixel cursor's immediate, deliberately rigid response.
+        applyPointer();
+      } else queuePointer();
     };
 
     const onOver = (e: PointerEvent) => {
@@ -149,6 +198,7 @@ export function Cursor() {
           });
         }
       }
+      requestTick();
     };
 
     const onDown = (e: PointerEvent) => {
@@ -165,16 +215,19 @@ export function Cursor() {
       } else {
         onMove(e); // pixel: nudge into the click offset immediately
       }
+      if (zone !== "pixel") requestTick();
     };
     const onUp = (e: PointerEvent) => {
       pressed = false;
       gsap.to([imgs.quill, imgs["quill-hover"]], { scale: 1, duration: 0.25 });
       if (zone === "pixel") onMove(e);
+      if (zone !== "pixel") requestTick();
     };
     const onLeaveWindow = (e: PointerEvent) => {
       if (!e.relatedTarget) {
         shown = false;
         gsap.to(hold, { autoAlpha: 0, duration: 0.2 });
+        requestTick();
       }
     };
 
@@ -280,6 +333,11 @@ export function Cursor() {
 
     let vel = 0;
     const tick = () => {
+      if (document.hidden) {
+        stopTick();
+        return;
+      }
+
       const now = performance.now();
       ctx.clearRect(0, 0, innerWidth, innerHeight);
 
@@ -307,30 +365,65 @@ export function Cursor() {
         rotTo(0);
       }
       drawInk(now);          // trail and blots keep fading in any zone
-      if (zone === "redpen") {
-        drawUnderline();
-        drawChecks(now);
-      }
-      prev = { x, y };
+      drawUnderline();       // annotations finish fading after a zone change
+      drawChecks(now);
+      prev.x = x;
+      prev.y = y;
+
+      const holderMoving =
+        shown && zone === "quill" && Math.hypot(raw.x - x, raw.y - y) > 0.1;
+      const effectsActive =
+        trail.length > 0 ||
+        blots.length > 0 ||
+        checks.length > 0 ||
+        !!ulTween?.isActive();
+      if (!holderMoving && !effectsActive) stopTick();
     };
-    gsap.ticker.add(tick);
+
+    const onResize = () => {
+      if (resizeFrame) return;
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = 0;
+        resize();
+        requestTick();
+      });
+    };
+    const onViewportChange = () => requestTick();
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stopTick();
+        cancelAnimationFrame(pointerFrame);
+        pointerFrame = 0;
+      } else {
+        if (pointerDirty) queuePointer();
+        requestTick();
+      }
+    };
 
     document.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerover", onOver, { passive: true });
     document.addEventListener("pointerdown", onDown, { passive: true });
     document.addEventListener("pointerup", onUp, { passive: true });
     document.addEventListener("pointerout", onLeaveWindow, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    addEventListener("resize", onResize, { passive: true });
+    addEventListener("scroll", onViewportChange, { passive: true });
 
     return () => {
       document.documentElement.classList.remove("cc-on");
-      gsap.ticker.remove(tick);
-      removeEventListener("resize", resize);
+      stopTick();
+      cancelAnimationFrame(pointerFrame);
+      cancelAnimationFrame(resizeFrame);
+      removeEventListener("resize", onResize);
+      removeEventListener("scroll", onViewportChange);
       document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerover", onOver);
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointerout", onLeaveWindow);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       ulTween?.kill();
+      gsap.killTweensOf([hold, ...Object.values(imgs), ul]);
     };
   }, [enabled]);
 
@@ -354,6 +447,7 @@ export function Cursor() {
                 top: -c.hy,
                 transformOrigin: `${c.hx}px ${c.hy}px`,
                 opacity: name === "quill" ? 1 : 0,
+                visibility: name === "quill" ? "visible" : "hidden",
               }}
               alt=""
               draggable={false}
