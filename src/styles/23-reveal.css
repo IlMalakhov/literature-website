@@ -1,4 +1,3 @@
-/* ---------- Reveal on scroll ---------- */
 .reveal {
     opacity: 0;
     transform: translateY(26px);
@@ -19,4 +18,3 @@
         transform: none;
     }
 }
-

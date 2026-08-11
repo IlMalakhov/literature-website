@@ -14,14 +14,12 @@ import {
   IconStarFill,
 } from "./Icons";
 
-/* Two ribbons drifting in opposite directions: titles one way, exam tags the other. */
 export function Marquee() {
   const root = useRef<HTMLDivElement>(null);
   const titles = [...MARQUEE, ...MARQUEE];
   const tags = [...MARQUEE_TAGS, ...MARQUEE_TAGS, ...MARQUEE_TAGS];
 
-  // The drift lives in CSS keyframes; hover eases their playbackRate instead
-  // of touching animation-duration, which would make the tracks jump.
+  // Changing animation-duration jumps the track; ease playbackRate instead.
   useEffect(() => {
     const el = root.current;
     if (!el) return;
@@ -65,7 +63,6 @@ export function Marquee() {
   );
 }
 
-/* Manifesto + «картотека»: the bento mosaic replaces the old stat strip. */
 export function Manifesto() {
   return (
     <section className="manifest" id="results">
@@ -119,9 +116,6 @@ export function Quotes() {
   );
 }
 
-/* Each plaque is three stacked bands — medal, title, description. The bands are
-   rows on .awards itself and every card subgrids into them, so all three line up
-   band-for-band even when one title wraps deeper than its neighbours. */
 function AwardsBlock() {
   return (
     <div className="awards reveal">

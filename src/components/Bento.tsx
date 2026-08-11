@@ -6,24 +6,15 @@ import { IconArrowForward } from "./Icons";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* =========================================================================
-   «Картотека»: бенто-мозаика внутри манифеста («Литература — не лотерея»).
-   Утверждённая комбинация из бенто-лаборатории: мозаика 6×3 · карточки ·
-   ящик (подпись выезжает при наведении) · переворот каталожной карточки
-   по клику · цифры. Числа набегают при появлении, полка кодификатора
-   листается движением мыши, Бегемот шагает только под курсором.
-   ========================================================================= */
-
 type Cell = {
   id: string;
   kind: "num" | "fact" | "img" | "works" | "map" | "sprite" | "cta";
-  /* размещение в сетке 6×3 + full-width на мобильной двухколонке */
   c: string; r: string; m?: boolean;
   label?: string;
   count?: number; prefix?: string; suffix?: string; value?: string;
   body?: string;
-  cap?: string;    /* курсивная подпись — выезжает при наведении */
-  verso?: string;  /* оборот каталожной карточки — переворот по клику */
+  cap?: string;
+  verso?: string;
   img?: string;
 };
 
@@ -85,7 +76,6 @@ const CELLS: ReadonlyArray<Cell> = [
   },
 ];
 
-/* Полка кодификатора: движение мыши листает натюрморты /works/ */
 const CARD_IMAGE_WIDTHS = [480, 768] as const;
 const INITIAL_SHELF_INDEX = 4;
 
@@ -218,7 +208,6 @@ function WorksShelf({ label, cap }: { label?: string; cap?: string }) {
   );
 }
 
-/* Карта: пунктир виден всегда, розовый маршрут дорисовывается при наведении */
 function RouteMap() {
   return (
     <svg className="bl-map" viewBox="0 0 220 96" aria-hidden="true">
@@ -294,7 +283,6 @@ function Recto({ cell }: { cell: Cell }) {
         </>
       );
     case "cta":
-      /* не внешняя ссылка: скроллим вниз к Telegram-композеру */
       return (
         <a className="bl-cta" href="#composer">
           <span className="bl-lb">{cell.label}</span>
@@ -311,7 +299,6 @@ export function Bento() {
   const [flipped, setFlipped] = useState<ReadonlySet<string>>(new Set());
   const gridRef = useRef<HTMLDivElement>(null);
 
-  /* числа набегают, когда сетка въезжает в кадр — как в остальных секциях */
   useLayoutEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;

@@ -6,15 +6,10 @@ import { RoadCal } from "./RoadCal";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* «Маршрут года»: a rose thread draws itself down the middle of the page as
-   the reader scrolls; milestones light up as the thread reaches them.
-   Zigzag on desktop, single left rail on mobile (CSS). */
-/* Calendars are decor, not list items: they hang off their step but sit
-   outside the flow, drifting past the edges of the zigzag. */
 export function Roadmap() {
   const root = useRef<HTMLElement>(null);
 
-  // running index so CSS can address each calendar as [data-cal="N"]
+  // CSS positions calendars by this dense index.
   let calSeen = 0;
 
   useLayoutEffect(() => {
@@ -32,8 +27,7 @@ export function Roadmap() {
             trigger: section.querySelector(".road__body"),
             start: "top 72%",
             end: "bottom 62%",
-            // scrub:true (not a number) — Lenis already smooths the scroll, so a
-            // numeric scrub would add a second easing layer that fights it.
+            // Lenis supplies easing; keep ScrollTrigger scrub direct.
             scrub: true,
           },
         });

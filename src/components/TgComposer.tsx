@@ -6,9 +6,6 @@ import { IconChevronDown } from "./Icons";
 
 const GRADES = ["9", "10", "11"] as const;
 
-/* telegram.svg (project root), inlined: the disc is one winding, the plane
-   is a hole in it — so the fill is the disc colour and whatever sits behind
-   the button shows through as the plane. */
 function SendIcon() {
   return (
     <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
@@ -17,15 +14,13 @@ function SendIcon() {
   );
 }
 
-/* An inline gap in the draft: sized to its content and centred, so it reads
-   as a written-in word, not a form field. */
 function Gap({
   label, placeholder, value, onChange,
 }: {
   label: string; placeholder: string; value: string;
   onChange: (v: string) => void;
 }) {
-  // +3ch: Garamond italic cyrillic runs wider than the ch unit average
+  // Cyrillic italics are wider than the average ch unit.
   const w = Math.max(placeholder.length, value.length) + 3;
   return (
     <input
@@ -41,8 +36,6 @@ function Gap({
   );
 }
 
-/* Grade is a fixed choice — a picker instead of free text. Radix Select
-   primitive (what shadcn wraps), skinned to match the gaps. */
 function GradePick({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <Select.Root value={value || undefined} onValueChange={onChange}>
@@ -67,9 +60,6 @@ function GradePick({ value, onChange }: { value: string; onChange: (v: string) =
   );
 }
 
-/* «Черновик в Telegram»: the booking message shown as an editable composer.
-   The circular send button always carries the current draft, and nothing is
-   sent until the user presses send inside Telegram — the microcopy says so. */
 export function TgComposer() {
   const [draft, setDraft] = useState<TgDraft>({ grade: "", prep: "", time: "" });
   const set = (key: keyof TgDraft) => (v: string) =>

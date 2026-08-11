@@ -1,8 +1,3 @@
-/* ---------- Nav ----------
-   Fixed, not sticky, and hidden until the first scroll: out of flow it costs
-   the hero no height, so the hero owns the whole first viewport down to the
-   parade's cobbles. Nav.tsx adds .scrolled past 20px, which drops the bar in
-   and lifts it back out on the way home. */
 .nav {
     position: fixed;
     top: 0;
@@ -53,7 +48,6 @@
     letter-spacing: 0.34em;
     text-transform: uppercase;
     color: var(--ink-soft);
-    /* optical: centers the caps on the serif's x-height band */
     transform: translateY(-1px);
 }
 .nav__cta {
@@ -75,4 +69,3 @@
         display: none;
     }
 }
-

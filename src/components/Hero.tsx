@@ -7,8 +7,7 @@ import { IconArrowDown, IconArrowForward } from "./Icons";
 export function Hero() {
   const root = useRef<HTMLElement>(null);
 
-  /* Mouse parallax: layers marked [data-mouse] drift by depth × cursor offset.
-     gsap.quickTo keeps it cheap; skipped for touch and reduced motion. */
+  // data-mouse is the parallax depth multiplier.
   useLayoutEffect(() => {
     const el = root.current;
     if (!el) return;
@@ -33,9 +32,6 @@ export function Hero() {
     <header className="hero" id="top" ref={root}>
       <div className="wrap">
         <div className="hero__stage">
-          {/* the badge is positioned against this wrapper, not the stage: it
-              shrink-wraps the title, so the badge keeps the same relationship
-              to «сдаётся.» however the stage flexes */}
           <div className="hero__titlewrap">
             <h1 className="hero__title">
               <span className="mask hero__l1"><span className="mask__in">Литература</span></span>
@@ -77,8 +73,6 @@ export function Hero() {
         </div>
       </div>
 
-      {/* full-bleed street, closing the hero: its cobbles are the bottom edge
-          of the first viewport */}
       <ParadeStage />
     </header>
   );

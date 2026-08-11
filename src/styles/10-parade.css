@@ -1,19 +1,5 @@
-/* ---------- Parade: shadow-theatre street ----------
-   Last item of the hero's flex column, so its bottom edge — the cobbles — is
-   the bottom of the first viewport. `height` is the preferred size; when the
-   copy above needs more room than the viewport has, flex-shrink trims this box
-   and, since everything in here is anchored to `bottom`, the crop eats sky off
-   the top rather than lifting the pavement. The floor keeps the tallest figure
-   (~150px + its 22px curb offset) from losing its head.
-
-   Clipped sideways only. Figures walk on from ±320px outside the box, so the
-   horizontal clip has to stay — but a shrunken street has less headroom than a
-   speech bubble needs (at 375×560 the box is 145px and the bubble starts at
-   -31px), and clipping the top edge is what was eating the bubbles above the
-   hero copy. Nothing draws the top edge — the stage has no background, the sky
-   IS the page — so a bubble crossing it just keeps going, over the copy.
-   `clip`, not `hidden`: `hidden` on one axis forces the other to `auto`, and the
-   street would scroll instead of overflowing. */
+/* Clip only horizontal entrances. Vertical overflow keeps bubbles visible when
+   the flex layout shortens the stage. */
 .stage {
     position: relative;
     flex: 0 1 auto;
@@ -38,7 +24,6 @@
     );
 }
 
-/* backdrop: stars, moon + roofline (pixel sprites from /public/parade) */
 .stars {
     position: absolute;
     left: 0;
@@ -102,12 +87,6 @@
     transform: scaleX(-1);
     opacity: 0.05;
 }
-/* Lit windows riding the dimmed roofline band. They sit behind both fog bands
-   (z 0 against 3 and 6), but the mist over them is only ~15% opaque, so paint
-   order alone never reads as distance — these are the sharpest, brightest thing
-   in the band and sharpness reads as nearness. The halo is the light diffusing
-   through the mist and the lower opacity is the mist eating it; between them the
-   windows sit back where the fog says they are. */
 .litwin {
     position: absolute;
     z-index: 0;
@@ -118,7 +97,6 @@
     filter: drop-shadow(0 0 4px rgba(236, 190, 120, 0.45));
 }
 
-/* background strollers on the far pavement */
 .bgfig {
     position: absolute;
     bottom: 44px;
@@ -134,7 +112,6 @@
     --sc: 0.55;
 }
 
-/* the seagull crossing high above the roofline */
 .gull {
     position: absolute;
     top: 12%;
@@ -143,14 +120,8 @@
     opacity: 0.5;
 }
 
-/* Drifting mist: pixel dither band, replaces the old blurred gradients.
-   Two boxes per band on purpose. The outer .fog is the layout box and the only
-   thing the entrance (paradeIntro.ts) ever transforms; .fog__in carries the
-   texture and its own endless drift. They have to stay apart: a CSS keyframe
-   animation outranks inline styles, so while both lived on one element the
-   entrance could only move the band by suspending fog-drift — and restoring it
-   snapped the band 56px sideways, because an animation resumes at its FIRST
-   keyframe (±3%), not where the entrance left the layer (0). */
+/* Keep entrance transforms on .fog and CSS drift on .fog__in; keyframes
+   override inline transform animations on the same element. */
 .fog {
     position: absolute;
     left: -15%;
@@ -164,10 +135,7 @@
     background: url(/parade/mist.png) left bottom / auto 240px repeat-x;
     image-rendering: pixelated;
     opacity: 0.16;
-    /* The band's own top edge is a straight cut across the dither, which reads
-       as a hard line, not as fog. Mask most of the height away in a long ramp so
-       it thins out into the sky instead of ending; the boxes are taller than the
-       fog looks for exactly this reason — the extra height is all falloff. */
+    /* The extra height is the masked fade region. */
     -webkit-mask-image: linear-gradient(
         to top,
         #000 0%,
@@ -184,7 +152,6 @@
         rgba(0, 0, 0, 0.3) 78%,
         transparent 100%
     );
-    /* slow enough to read as weather rather than as a moving layer */
     animation: fog-drift 100s ease-in-out infinite alternate;
 }
 .fog--back {
@@ -210,7 +177,6 @@
     }
 }
 
-/* pixel cobblestone pavement; the curb line sits just under the feet */
 .cobbles {
     position: absolute;
     left: 0;
@@ -223,7 +189,6 @@
     opacity: 0.3;
 }
 
-/* the lamp in the foreground — figures pass behind it */
 .lamp {
     position: absolute;
     right: 5%;
@@ -275,14 +240,12 @@
     }
 }
 
-/* front figures */
 .fig {
     position: absolute;
     bottom: 22px;
     left: 50%;
     z-index: 4;
 }
-/* contact shadow keeps feet on the pavement */
 .fig::after {
     content: "";
     position: absolute;
@@ -298,11 +261,7 @@
     filter: blur(3px);
 }
 
-/* sprite strips: equal-width cells, feet on the bottom row. steps() flips
-   through the cells; cycles run unconditionally — figures are only ever
-   moving or offscreen (pausing via GSAP callbacks broke on timeline repeats).
-   Geometry per figure: --cw/--ch native cell size, --n frames, --sc display
-   scale, --dur one full cycle. */
+/* CSS owns sprite cycles; pausing them from GSAP callbacks breaks on repeats. */
 .sprite {
     width: calc(var(--cw) * var(--sc));
     height: calc(var(--ch) * var(--sc));
@@ -463,20 +422,16 @@
     }
     .bubble__in {
         font-size: 0.85rem;
-    } /* fit override: nowrap quote on narrow screens */
+    }
 }
-/* Small phones: last of the hero's slack comes out of the sky here. 132px is
-   the tallest mobile figure (onegin, 106px) plus its 22px curb offset — the
-   floor below which heads start losing their hats. */
+/* Tallest mobile figure plus its curb offset. */
 @media (max-width: 940px) and (max-height: 700px) {
     .stage {
         min-height: 132px;
     }
 }
 
-/* Recurring motion is suspended as one unit when the street is offscreen or
-   its tab is hidden. The class is not applied during the pop-up entrance, so
-   that first impression stays exactly as designed. */
+/* ParadeStage delays this pause until the entrance completes. */
 .stage--paused .sprite,
 .stage--paused .fog__in,
 .stage--paused .lamp__glow {

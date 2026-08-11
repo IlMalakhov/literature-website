@@ -6,8 +6,6 @@ import { ESSAY_NOTES } from "../data";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* A marked span in the paper: rose highlight sweeps in when the matching
-   margin note scrolls into view; the superscript flag ties them together. */
 function M({ n, children }: { n: number; children: ReactNode }) {
   return (
     <mark className="essay__mark" data-mark={n}>
@@ -17,9 +15,6 @@ function M({ n, children }: { n: number; children: ReactNode }) {
   );
 }
 
-/* «Разбор сочинения»: a student essay on paper, annotated live as the
-   reader scrolls — each margin note activates its highlight in the text,
-   like watching the expert's pen move. */
 export function Essay() {
   const root = useRef<HTMLElement>(null);
 
@@ -27,10 +22,7 @@ export function Essay() {
     const section = root.current;
     if (!section) return;
 
-    // Pin each flag to the top-right corner of its mark's first line. An
-    // abs-positioned child of a wrapped inline resolves its containing block
-    // against the FIRST line fragment, so offsetting by that fragment's width
-    // lands the flag at the end of line 1 whether or not the mark wraps.
+    // Position flags from the first client rect so wrapped marks stay aligned.
     const layoutFlags = () => {
       section.querySelectorAll<HTMLElement>(".essay__mark").forEach((mark) => {
         const flag = mark.querySelector<HTMLElement>(".essay__flag");
@@ -47,7 +39,6 @@ export function Essay() {
     const mm = gsap.matchMedia(section);
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      // pen choreography: note enters view → note + its mark light up
       section.querySelectorAll<HTMLElement>("[data-note]").forEach((note) => {
         const mark = section.querySelector(
           `[data-mark="${note.dataset.note}"]`,
@@ -62,7 +53,6 @@ export function Essay() {
           },
         });
       });
-      // the verdict stamp slams in last
       const stamp = section.querySelector<HTMLElement>(".essay__stamp");
       if (stamp) {
         gsap.from(stamp, {
@@ -76,7 +66,6 @@ export function Essay() {
       }
     });
 
-    // reduced motion: everything simply on
     mm.add("(prefers-reduced-motion: reduce)", () => {
       section
         .querySelectorAll("[data-note], [data-mark]")

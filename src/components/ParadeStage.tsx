@@ -6,8 +6,6 @@ import { runParadeIntro } from "./paradeIntro";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Lit windows scattered over the (dimmed) skyline band; the sprites stay at
-   full opacity so they read as lamps behind the roofline. */
 const WINDOWS: ReadonlyArray<{ n: 1 | 2 | 3 | 4 | 5 | 6; left: string; bottom: number }> = [
   { n: 4, left: "6.2%", bottom: 63 },
   { n: 2, left: "18.1%", bottom: 55 },
@@ -31,19 +29,7 @@ function Figure({ k, msg }: { k: FigureKey; msg: string }) {
   );
 }
 
-/**
- * Pixel shadow-theatre street. Figures are sprite strips (public/parade/*.png,
- * equal cells, feet on the bottom row) cycled with steps(). Their shared CSS
- * walk cycles pause with the whole stage rather than on individual GSAP
- * callbacks: onStart stops re-firing on timeline repeats, which used to freeze
- * every figure from the second loop on. Each figure crosses the stage on the
- * slow-mo ease, speaks its bubble mid-stage, and strides off. Dim strollers
- * and a seagull cross continuously while the stage is active.
- *
- * On first paint the street unfolds like a pop-up book (see paradeIntro.ts)
- * alongside the hero copy, and nothing walks until it is over: `sync()` gates
- * the loop on BOTH the entrance having finished and the stage being in view.
- */
+/** Runs the parade after its entrance and only while the stage is visible. */
 export function ParadeStage() {
   const root = useRef<HTMLDivElement>(null);
 
@@ -61,7 +47,6 @@ export function ParadeStage() {
 
     const ctx = gsap.context(() => {
       if (reduced) {
-        // static tableau
         const spots: Partial<Record<FigureKey, string>> = {
           carriage: "20%", katerina: "52%", onegin: "80%",
         };
@@ -78,13 +63,10 @@ export function ParadeStage() {
         return;
       }
 
-      const off = () => stage.offsetWidth / 2 + 320; // safely offscreen
+      const off = () => stage.offsetWidth / 2 + 320;
       gsap.set(Object.values(figs), { xPercent: -50, x: () => -off() });
 
-      /* Custom slow-mo ease: brisk at the screen edges, an unhurried stroll
-         through the middle — the figure never freezes, it just lingers.
-         x(t) = t + k·sin(2πt)/2π keeps x(0)=0, x(1)=1 and is monotonic
-         for k < 1; mid-stage speed ≈ (1−k) of average. */
+      // Monotonic for k < 1; midpoint speed is approximately 1 - k.
       const slowMo = (k: number) => (t: number) =>
         t + (k * Math.sin(2 * Math.PI * t)) / (2 * Math.PI);
 
@@ -103,17 +85,13 @@ export function ParadeStage() {
           },
           "+=0.3",
         )
-          // the bubble rides the slow middle stretch of the walk
           .to(bub, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.7)" }, `<${(dur * 0.26).toFixed(2)}`)
           .to(bub, { scale: 0, opacity: 0, duration: 0.3, ease: "back.in(1.4)" }, `<${(dur * 0.42).toFixed(2)}`);
       });
 
-      /* Ambient crossings start paused too: during the entrance the street has
-         to hold still, otherwise a stroller drifts through a stack of plates
-         that has not finished assembling. */
+      // Hold ambient motion until the entrance completes.
       const ambient: gsap.core.Tween[] = [];
 
-      // dim strollers drifting across the back street while the stage is active
       stage.querySelectorAll<HTMLElement>(".bgfig").forEach((el, i) => {
         ambient.push(gsap.fromTo(
           el,
@@ -130,7 +108,6 @@ export function ParadeStage() {
         ));
       });
 
-      // the seagull crosses high above the roofline now and then
       ambient.push(gsap.fromTo(
         stage.querySelector(".gull"),
         { xPercent: -50, x: () => -off() },
@@ -152,8 +129,7 @@ export function ParadeStage() {
         const documentVisible = !document.hidden;
         const active = inView && entered && documentVisible;
 
-        // Keep the entrance visually unchanged. Once it has finished, pause
-        // the CSS sprite/fog/lamp cycles whenever the street cannot be seen.
+        // Do not pause CSS cycles until the entrance has completed.
         stage.classList.toggle(
           "stage--paused",
           !documentVisible || (entered && !inView),
@@ -173,7 +149,6 @@ export function ParadeStage() {
         stage.classList.remove("stage--paused");
       };
 
-      // run the parade only while the street is on screen
       const streetTrigger = ScrollTrigger.create({
         trigger: stage,
         start: "top bottom",
@@ -184,7 +159,6 @@ export function ParadeStage() {
       inView = streetTrigger.isActive;
       sync();
 
-      // reduced motion never gets here; everyone else gets the entrance first
       disposeIntro = runParadeIntro(stage, startLoop);
     }, root);
 
@@ -215,8 +189,6 @@ export function ParadeStage() {
       <div className="bgfig bgfig--2"><div className="sprite sprite--onegin" /></div>
 
       <div className="gull"><div className="sprite sprite--gull" /></div>
-      {/* the band and its drift live on the inner box, so the entrance can
-          hinge the outer one without fighting fog-drift — see 10-parade.css */}
       <div className="fog fog--back"><div className="fog__in" /></div>
 
       {SEGMENTS.map(([k, msg]) => <Figure key={k} k={k} msg={msg} />)}

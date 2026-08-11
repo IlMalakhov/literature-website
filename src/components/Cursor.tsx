@@ -8,14 +8,10 @@ type Zone = "quill" | "redpen" | "pixel";
 const INTERACTIVE =
   "a, button, [role='button'], [role='option'], [role='slider'], summary, label, [data-mark]";
 const TEXTFIELD = "input, textarea, select";
-const ROSE = "238, 93, 120";     // --accent
-const DEEP = "165, 43, 70";      // --btn
+const ROSE = "238, 93, 120"; // --accent
+const DEEP = "165, 43, 70"; // --btn
 
-/* Section-aware custom cursor: quill by default, the teacher's red pen
-   inside «Разбор» (data-cursor="redpen"), an 8-bit sprite over the parade
-   (data-cursor="pixel"). An ink canvas underneath carries the quill trail,
-   the red wavy underline and the ✓ marks; it self-fades every frame, so
-   everything drawn on it "soaks into the paper" without bookkeeping. */
+// Cursor mode comes from the nearest data-cursor region.
 export function Cursor() {
   const [enabled, setEnabled] = useState(false);
   const layer = useRef<HTMLDivElement>(null);
@@ -49,8 +45,7 @@ export function Cursor() {
     if (import.meta.env.DEV) (window as unknown as { __gsap: typeof gsap }).__gsap = gsap;
 
     const resize = () => {
-      // A 2× full-viewport canvas contains four times as many pixels. Ink is
-      // soft-edged by design, so 1.5× keeps it crisp without the 4× clear cost.
+      // Cap DPR to limit the cost of clearing a full-viewport canvas each frame.
       const dpr = Math.min(devicePixelRatio || 1, 1.5);
       cnv.width = Math.round(innerWidth * dpr);
       cnv.height = Math.round(innerHeight * dpr);
@@ -59,10 +54,9 @@ export function Cursor() {
     };
     resize();
 
-    /* ---- state ---- */
     let zone: Zone = "quill";
     let sprite: SpriteName = "quill";
-    let overText = false;         // over input/textarea: yield to native caret
+    let overText = false; // Yield to the native caret in form fields.
     let shown = false;
     const raw = { x: -100, y: -100 };
     const prev = { x: -100, y: -100 };
@@ -72,12 +66,10 @@ export function Cursor() {
     let resizeFrame = 0;
     let pressed = false;
     let underline: Element | null = null;
-    const ul = { p: 0, a: 0 };          // draw-in progress / fade-out alpha
+    const ul = { p: 0, a: 0 }; // draw progress / alpha
     let ulTween: gsap.core.Tween | null = null;
     const checks: { x: number; y: number; born: number; tilt: number }[] = [];
-    // the canvas is fully repainted every frame (a destination-out fade never
-    // reaches zero in 8-bit alpha and leaves a permanent ghost), so ink lives
-    // as short-lived particles instead
+    // Repaint particles; destination-out leaves residual alpha.
     const TRAIL_LIFE = 420;
     const BLOT_LIFE = 650;
     const trail: { x: number; y: number; w: number; born: number }[] = [];
@@ -93,7 +85,7 @@ export function Cursor() {
       if (!pointerDirty) return;
       pointerDirty = false;
       if (zone === "pixel") {
-        // grid-snapped, no easing — the sprite moves like it's 1993
+        // Pixel mode is grid-snapped and has no easing.
         const off = pressed ? 2 : 0;
         gsap.set(hold, {
           x: Math.round((raw.x + off) / 2) * 2,
@@ -110,8 +102,7 @@ export function Cursor() {
       pointerFrame = requestAnimationFrame(() => {
         pointerFrame = 0;
         applyPointer();
-        // Only the quill needs per-frame positions for its ink trail. GSAP
-        // carries the red pen between coalesced pointer updates by itself.
+        // Only the quill trail needs per-frame positions.
         if (zone === "quill") requestTick();
       });
     };
@@ -149,7 +140,6 @@ export function Cursor() {
       return hovering ? "quill-hover" : "quill";
     };
 
-    /* ---- pointer plumbing ---- */
     const onMove = (e: PointerEvent) => {
       const coalesced = e.getCoalescedEvents?.();
       const point = coalesced?.length ? coalesced[coalesced.length - 1] : e;
@@ -164,7 +154,6 @@ export function Cursor() {
       }
       pointerDirty = true;
       if (zone === "pixel") {
-        // Preserve the pixel cursor's immediate, deliberately rigid response.
         applyPointer();
       } else queuePointer();
     };
@@ -181,7 +170,6 @@ export function Cursor() {
       });
       show(spriteFor(!!hovered));
 
-      // red wavy underline under the hovered element
       const next = zone === "redpen" && hovered ? hovered : null;
       if (next !== underline) {
         ulTween?.kill();
@@ -191,7 +179,7 @@ export function Cursor() {
           ul.a = 1;
           ulTween = gsap.to(ul, { p: 1, duration: 0.45, ease: "power2.out" });
         } else {
-          // keep the element around while the stroke fades out
+          // Keep the target until the stroke finishes fading.
           ulTween = gsap.to(ul, {
             a: 0, duration: 0.3, ease: "power1.out",
             onComplete: () => { underline = null; },
@@ -213,7 +201,7 @@ export function Cursor() {
         gsap.to(imgs.quill, { scale: 0.9, duration: 0.1 });
         gsap.to(imgs["quill-hover"], { scale: 0.9, duration: 0.1 });
       } else {
-        onMove(e); // pixel: nudge into the click offset immediately
+        onMove(e);
       }
       if (zone !== "pixel") requestTick();
     };
@@ -231,7 +219,6 @@ export function Cursor() {
       }
     };
 
-    /* ---- canvas painters ---- */
     const inkBlot = (x: number, y: number) => {
       const born = performance.now();
       blots.push({ x, y, r: 3.5, born });
@@ -249,7 +236,7 @@ export function Cursor() {
       while (trail.length && now - trail[0].born > TRAIL_LIFE) trail.shift();
       for (let i = 1; i < trail.length; i++) {
         const a = trail[i - 1], b = trail[i];
-        if (Math.hypot(b.x - a.x, b.y - a.y) > 120) continue; // teleport gap
+        if (Math.hypot(b.x - a.x, b.y - a.y) > 120) continue;
         const k = 1 - (now - b.born) / TRAIL_LIFE;
         ctx.strokeStyle = `rgba(${ROSE}, ${0.42 * k})`;
         ctx.lineWidth = Math.max(b.w * (0.35 + 0.65 * k), 0.5);
@@ -271,14 +258,12 @@ export function Cursor() {
 
     const drawUnderline = () => {
       if (!underline || !underline.isConnected || ul.a <= 0.01) return;
-      // one pen stroke that breaks across wrapped lines and hugs each line's
-      // text: getClientRects() gives a box per line fragment; the draw-in
-      // progress is spread over their combined width so it flows line to line
+      // Spread draw progress across line fragments so wrapped text is one stroke.
       const rects = [...underline.getClientRects()].filter((r) => r.width > 1);
       if (!rects.length) return;
       const total = rects.reduce((s, r) => s + r.width, 0);
-      let remaining = ul.p * total;          // px of stroke still to reveal
-      let phase = 0;                          // cumulative x — keeps the wave continuous
+      let remaining = ul.p * total;
+      let phase = 0; // Keep the wave continuous across line fragments.
       ctx.strokeStyle = `rgba(${DEEP}, ${0.95 * ul.a})`;
       ctx.lineWidth = 2;
       for (const r of rects) {
@@ -303,14 +288,14 @@ export function Cursor() {
         const c = checks[i];
         const age = now - c.born;
         if (age > 1100) { checks.splice(i, 1); continue; }
-        const draw = Math.min(age / 260, 1);           // stroke-in
+        const draw = Math.min(age / 260, 1);
         const alpha = age < 650 ? 1 : 1 - (age - 650) / 450;
         ctx.save();
         ctx.translate(c.x, c.y);
         ctx.rotate(c.tilt);
         ctx.strokeStyle = `rgba(${DEEP}, ${alpha})`;
         ctx.lineWidth = 3;
-        // ✓ as one path of length ~34px, revealed by `draw`
+        // Reveal the checkmark as one continuous path.
         const pts = [[-9, -1], [-2, 6], [11, -12]];
         const seg1 = Math.hypot(7, 7), seg2 = Math.hypot(13, 18);
         const total = (seg1 + seg2) * draw;
@@ -349,7 +334,7 @@ export function Cursor() {
 
       if (shown && zone === "quill" && !overText && dist > 0.1) {
         trail.push({ x, y, w: Math.min(1 + vel * 0.22, 6), born: now });
-        if (vel > 26) {                                 // fast flick: spatter
+        if (vel > 26) {
           for (let i = 0; i < 2; i++) {
             const a = Math.random() * Math.PI * 2;
             blots.push({
@@ -359,13 +344,12 @@ export function Cursor() {
             });
           }
         }
-        // the quill leans with horizontal velocity, like a real hand
         rotTo(Math.max(-15, Math.min(15, dx * 1.4)));
       } else if (zone === "quill") {
         rotTo(0);
       }
-      drawInk(now);          // trail and blots keep fading in any zone
-      drawUnderline();       // annotations finish fading after a zone change
+      drawInk(now);
+      drawUnderline();
       drawChecks(now);
       prev.x = x;
       prev.y = y;

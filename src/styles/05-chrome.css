@@ -1,4 +1,3 @@
-/* ---------- Fixed chrome: progress bar + side rail ---------- */
 .progressbar {
     position: fixed;
     top: 0;
@@ -34,4 +33,3 @@
         display: none;
     }
 }
-

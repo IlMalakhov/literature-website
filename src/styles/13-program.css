@@ -1,4 +1,3 @@
-/* ---------- Program: pinned horizontal scroll ---------- */
 .hp {
     padding-top: clamp(2.5rem, 5.5vw, 5.5rem);
 }
@@ -38,10 +37,7 @@
     }
 }
 
-/* Fill from the nav clearance to the bottom of the viewport: the view is pinned
-   with its top at --anchor-top, so this puts its bottom progress bar at the
-   bottom of the screen on any height (a fixed height left the bar mid-screen on
-   tall displays). Mobile overrides this to auto for the stacked layout. */
+/* The pinned top is --anchor-top; fill the remaining viewport height. */
 .hp__view {
     position: relative;
     height: calc(100svh - var(--anchor-top));
@@ -155,7 +151,7 @@
     .hp__ghost {
         font-size: 7rem;
         top: -2.4rem;
-    } /* fit override: stacked mobile layout */
+    }
     .hp__body {
         padding-top: 1rem;
     }
@@ -164,4 +160,3 @@
         display: none;
     }
 }
-

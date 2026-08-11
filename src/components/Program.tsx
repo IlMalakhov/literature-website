@@ -54,9 +54,6 @@ const PANELS = [
   },
 ] as const;
 
-/* Pinned horizontal scroll: the section freezes while the three panels ride
-   sideways. Falls back to a vertical stack on narrow screens / reduced motion
-   (the tween simply isn't created there — CSS lays panels in a column). */
 export function Program() {
   const root = useRef<HTMLElement>(null);
 
@@ -70,8 +67,7 @@ export function Program() {
       const track = section.querySelector<HTMLElement>(".hp__track")!;
       const bar = section.querySelector<HTMLElement>(".hp__bar i")!;
       const dist = () => track.scrollWidth - view.clientWidth;
-      // Single source for the nav clearance — the same value the anchor jump in
-      // App.tsx uses — so the pin and the jump can never drift apart.
+      // Share anchor clearance with App.tsx.
       const pad = () =>
         parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 90;
 
@@ -79,24 +75,13 @@ export function Program() {
         x: () => -dist(),
         ease: "none",
         scrollTrigger: {
-          // Pin the panel viewport (not the whole section): the section's heading
-          // + top padding make it taller than the screen, so pinning the section
-          // pushed the view's bottom progress bar off-screen. Pinned `pad` below
-          // the top (clearing the sticky nav), the view fills the rest of the
-          // viewport height (see .hp__view), so its bar sits at the bottom of the
-          // screen on any display, and the heading scrolls away above. The `id`
-          // lets App.tsx aim a #program jump at this trigger's exact `start` —
-          // the one true "horizontal scroll begins here" point.
+          // Pin the viewport, not the taller section, to keep the progress bar visible.
           id: "program-h",
           trigger: view,
           start: () => "top top+=" + pad(),
           end: () => "+=" + dist(),
           pin: view,
-          // Lenis already eases the scroll; a numeric scrub adds a *second*
-          // easing layer on top, and the two settle against each other when the
-          // pin engages — the track drifts back toward x:0 (rightward), which
-          // reads as a jitter at the snap. scrub:true ties the track directly to
-          // the (already-smoothed) scroll position, so there's only one easing.
+          // Lenis supplies easing; numeric scrub causes jitter at the pin boundary.
           scrub: true,
           invalidateOnRefresh: true,
           onUpdate: (self) => { bar.style.transform = `scaleX(${self.progress})`; },

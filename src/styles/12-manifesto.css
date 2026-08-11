@@ -1,4 +1,3 @@
-/* ---------- Manifesto + stats ---------- */
 .manifest {
     position: relative;
     overflow: hidden;
@@ -36,4 +35,3 @@
     font-size: var(--h-2xl);
     line-height: 1;
 }
-

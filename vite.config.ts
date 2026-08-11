@@ -3,6 +3,6 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  // PORT is assigned by the preview harness (autoPort); 4600 is the fallback
+  // The preview harness sets PORT.
   server: { port: Number(process.env.PORT) || 4600, host: true },
 });

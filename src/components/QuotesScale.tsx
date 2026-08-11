@@ -3,17 +3,6 @@ import gsap from "gsap";
 import { AVG_SCORE, QUOTES, QUOTES_FILLER } from "../data";
 import { IconArrowForward } from "./Icons";
 
-/* «Шкала баллов»: навигация по отзывам через само число. Горизонтальная
-   шкала 78–100, засечки — реальные результаты учеников (высота засечки —
-   сколько человек сдали на этот балл), пунктиром отмечен средний балл.
-   Тянем шкалу (или стрелками с клавиатуры) — гигантский балл сменяется,
-   и рядом проявляются отзывы, стоящие за этим результатом.
-
-   Живёт секция двумя движениями: при первом появлении иголка проезжает всю
-   шкалу от минимума до максимума (мимо React-состояния, прямо по DOM, чтобы
-   не дёргать перерисовку на каждый кадр), а в простое — раз в ~6 секунд —
-   сама перебирается к соседнему баллу, пока курсор вне компонента. */
-
 type Quote = { text: string; who: string; role: string; score: string };
 
 const BY_SCORE = new Map<number, Quote[]>();
@@ -26,12 +15,10 @@ const MIN = SCORES[0];
 const MAX = SCORES[SCORES.length - 1];
 
 const pct = (v: number) => ((v - MIN) / (MAX - MIN)) * 100;
-/* балл задаёт и начертание: минимум — тонкий 200, максимум — чёрный 900 */
 const wghtOf = (v: number) => Math.round(200 + (pct(v) / 100) * 700);
 const nearest = (v: number) =>
   SCORES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
 const plural = (n: number) => (n === 1 ? "отзыв" : n < 5 ? "отзыва" : "отзывов");
-/* высота засечки-«гистограммы»: растёт с числом сдавших на этот балл */
 const tickH = (n: number) => Math.min(16 + (n - 1) * 12, 40);
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -58,7 +45,6 @@ export function QuotesScale() {
 
   const quotes = BY_SCORE.get(score)!;
 
-  /* смена балла: число поднимается, отзывы проявляются каскадом */
   useLayoutEffect(() => {
     if (reduced() || intro.current?.isActive()) return;
     const anims = [
@@ -76,7 +62,6 @@ export function QuotesScale() {
     return () => anims.forEach((a) => a.kill());
   }, [score]);
 
-  /* вступительный проезд: 78 → 100 при первом появлении в кадре */
   const runIntro = () => {
     introDone.current = true;
     if (reduced()) return;
@@ -101,7 +86,6 @@ export function QuotesScale() {
     });
   };
 
-  /* проезд прерывается первым же касанием — шкала сразу слушается рук */
   const killIntro = () => {
     if (!intro.current?.isActive()) return;
     intro.current.kill();
@@ -130,8 +114,6 @@ export function QuotesScale() {
     };
   }, []);
 
-  /* автодрейф: в простое шкала сама перебирается к соседнему баллу,
-     на краях разворачивается; замирает, пока курсор над компонентом */
   useEffect(() => {
     if (reduced()) return;
     const id = setInterval(() => {
@@ -197,7 +179,7 @@ export function QuotesScale() {
           killIntro();
           dragging.current = true;
           setScore(fromClientX(e.clientX));
-          try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* синтетические события без активного указателя */ }
+          try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* No active pointer. */ }
         }}
         onPointerMove={(e) => {
           if (dragging.current) setScore(fromClientX(e.clientX));

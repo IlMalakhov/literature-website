@@ -1,6 +1,4 @@
-/* Entry point. Parts load in cascade order — the numeric prefix IS that
-   order, so never reorder these imports. Tokens, reset and typography must
-   stay ahead of every component. Vite inlines @import at build time. */
+/* Numeric prefixes define cascade order. */
 
 @import "./styles/00-fonts.css";
 @import "./styles/01-tokens.css";

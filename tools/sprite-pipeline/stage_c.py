@@ -18,7 +18,7 @@ for slug in ["skyline", "lamp", "moon", "mist", "cobbles"]:
     Image.fromarray(t, "RGBA").save(os.path.join(PUB, f"{slug}.png"))
     print(slug, t.shape[1], "x", t.shape[0])
 
-# windows -> 6 separate sprites, split on the 5 widest gaps
+# Split windows at the five widest gaps.
 w = np.asarray(Image.open(os.path.join(NATIVE, "windows.png")))
 cols = (w[..., 3] > 0).any(axis=0)
 xs = np.where(cols)[0]

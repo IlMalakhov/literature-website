@@ -1,14 +1,5 @@
 import * as React from "react";
 
-/* SF-style icons as real SVG. The arrows replaced the "↓" / "→" text characters
-   that used to stand in for them — text arrows inherit the serif's own metrics,
-   so they sat off-baseline and changed weight between fonts; these don't. The
-   star and laurels replaced hand-drawn paths on the award plaques.
-   Size them from CSS (width/height in em) — the attribute defaults are only a
-   fallback, and `fill: currentColor` means `color` still drives them. */
-
-/* strokeLinecap/strokeLinejoin are deliberately not redeclared — React types
-   them as unions, and widening them to `string` here would not extend. */
 export interface IconProps extends React.SVGProps<SVGSVGElement> {
   width?: number | string;
   height?: number | string;
@@ -165,8 +156,7 @@ export function IconStarFill({
   );
 }
 
-/* The two laurel branches flanking «№1». They are separate drawings, not one
-   path mirrored — so no scaleX(-1) on the trailing one. */
+// Separate paths preserve the asymmetry of the two laurel branches.
 export function IconLaurelLeading({
   className,
   width = 10.4543,

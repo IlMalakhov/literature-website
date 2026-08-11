@@ -24,8 +24,7 @@ os.makedirs(PREV, exist_ok=True)
 
 DARK = np.array([0x12, 0x0A, 0x0E], dtype=np.uint8)  # site --bg
 
-# (file, slug, kind, css_size_longest, tip_corner)
-# tip_corner: which corner of the cropped bbox the hotspot tip lives in
+# (file, slug, kind, CSS size on longest edge, hotspot corner)
 SPRITES = [
     ("dip.png",         "quill",       "soft",  48, "tl"),
     ("dip-hover.png",   "quill-hover", "soft",  48, "bl"),
@@ -39,14 +38,13 @@ def soft_matte(rgb):
     """Alpha from green dominance, smoothstepped; despill kept pixels."""
     f = rgb.astype(np.float64)
     r, g, b = f[..., 0], f[..., 1], f[..., 2]
-    dom = g - np.maximum(r, b)          # >0 on green screen, <=0 on subject
-    # dom ~ 60..255 on pure screen, ~0 at subject edge. Map 8..48 -> 1..0
+    dom = g - np.maximum(r, b)  # Positive on green screen.
+    # Map green dominance 8..48 to alpha 1..0.
     a = np.clip((48.0 - dom) / 40.0, 0.0, 1.0)
-    a = a * a * (3 - 2 * a)             # smoothstep
-    # solid interior: anything with no green dominance at all is fully opaque
+    a = a * a * (3 - 2 * a)
     a[dom <= 0] = 1.0
     out = rgb.astype(np.int16).copy()
-    # despill: subject palette (ivory/rose) never has green as max channel
+    # Remove green spill from the ivory/rose subject palette.
     spill = (a > 0) & (g > np.maximum(r, b))
     out[..., 1] = np.where(spill, np.maximum(out[..., 0], out[..., 2]), out[..., 1])
     return out.astype(np.uint8), (a * 255).round().astype(np.uint8)
@@ -65,7 +63,7 @@ def native_cell(rgb, mask):
             if mrow.sum() < 32:
                 continue
             change = (np.abs(np.diff(row.astype(np.int16), axis=0)) > 24).any(1)
-            change &= mrow[1:] & mrow[:-1]      # transitions inside the sprite
+            change &= mrow[1:] & mrow[:-1]
             d = np.flatnonzero(change)
             if len(d) > 1:
                 runs.extend(np.diff(d).tolist())
@@ -113,7 +111,7 @@ for fname, slug, kind, css, corner in SPRITES:
     if kind == "soft":
         rgb2, alpha = soft_matte(rgb)
         rgb2, alpha = crop(rgb2, alpha, margin=6)
-        # export @2x of the CSS size, longest side
+        # Export at 2x CSS size.
         h, w = alpha.shape
         scale = (css * 2) / max(h, w)
         size = (max(round(w * scale), 1), max(round(h * scale), 1))
@@ -123,7 +121,7 @@ for fname, slug, kind, css, corner in SPRITES:
         f = rgb.astype(np.float64)
         dom = f[..., 1] - np.maximum(f[..., 0], f[..., 2])
         keep = dom < 40
-        # kill stray keyed specks
+        # Remove disconnected keyed specks.
         lab, n = ndimage.label(keep)
         if n > 1:
             sizes = ndimage.sum(keep, lab, range(1, n + 1))
@@ -137,13 +135,13 @@ for fname, slug, kind, css, corner in SPRITES:
         rgb2, alpha = crop(rgb2, alpha, margin=0)
         h, w = alpha.shape
         nw, nh = max(w // cell, 1), max(h // cell, 1)
-        # sample at cell centers via NEAREST on the cropped sprite
+        # Sample cell centers from the cropped sprite.
         im = Image.fromarray(np.dstack([rgb2, alpha]), "RGBA").resize(
             (nw, nh), Image.NEAREST)
         arr = np.asarray(im)
         rgb2, alpha = arr[..., :3], np.where(arr[..., 3] > 128, 255, 0).astype(np.uint8)
         disp = max(nw, nh)
-        disp_scale = 2 if disp <= 20 else 1  # tiny native grids display at 2x
+        disp_scale = 2 if disp <= 20 else 1
         disp_w, disp_h = nw * disp_scale, nh * disp_scale
 
     tx, ty = find_tip(alpha, corner)
@@ -151,7 +149,6 @@ for fname, slug, kind, css, corner in SPRITES:
     Image.fromarray(np.dstack([rgb2, alpha]), "RGBA").save(
         os.path.join(OUT, f"{slug}.png"))
 
-    # dark-bg preview with a crosshair on the hotspot
     comp = np.where(alpha[..., None] > 8,
                     (rgb2.astype(np.float64) * (alpha[..., None] / 255.0)
                      + DARK * (1 - alpha[..., None] / 255.0)),
@@ -167,7 +164,7 @@ for fname, slug, kind, css, corner in SPRITES:
     config[slug] = {
         "src": f"/cursors/{slug}.png",
         "w": round(disp_w), "h": round(disp_h),
-        # hotspot in display px
+        # Hotspot in display pixels.
         "hx": round(tx / w * disp_w), "hy": round(ty / h * disp_h),
         "pixel": kind == "pixel",
     }

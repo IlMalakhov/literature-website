@@ -1,4 +1,3 @@
-/* ---------- Essay: the expert's pen, live ---------- */
 .essay {
     position: relative;
     overflow: hidden;
@@ -46,12 +45,10 @@
     padding-bottom: 1rem;
     margin-bottom: 1.6rem;
 }
-/* the marked phrase: highlight sweeps in left→right like a pen stroke */
 .essay__mark {
     position: relative;
     color: inherit;
-    /* reset the <mark> UA yellow; the highlighter sweeps in on scroll instead.
-     no border here — the red wavy underline is drawn by the pen cursor */
+    /* Reset the browser's default mark highlight. */
     background-color: transparent;
     background-image: linear-gradient(
         rgba(255, 214, 46, 0.55),
@@ -60,7 +57,7 @@
     background-repeat: no-repeat;
     background-size: 0% 88%;
     background-position: 0 60%;
-    /* clone so the highlight hugs each line fragment when the mark wraps */
+    /* Apply the highlight to each wrapped fragment. */
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     transition: background-size 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -68,9 +65,8 @@
 .essay__mark.on {
     background-size: 100% 88%;
 }
-/* left/top are set in JS to the top-right of the mark's first line, because
-   an abs-positioned child of a wrapped inline has an unreliable containing
-   block in Chrome; the transform only nudges to the corner and animates in */
+/* JS positions this from the first client rect; Chrome is inconsistent for
+   absolutely positioned children of wrapped inline elements. */
 .essay__flag {
     position: absolute;
     left: 0;
@@ -92,7 +88,6 @@
 .essay__mark.on .essay__flag {
     transform: translate(-38%, -52%) scale(1);
 }
-/* verdict stamp */
 .essay__stamp {
     position: absolute;
     right: clamp(1rem, 3vw, 2.4rem);
@@ -119,15 +114,12 @@
     letter-spacing: 0.18em;
     font-weight: 400;
 }
-/* margin notes */
 .essay__notes {
     display: grid;
     gap: clamp(1.2rem, 2.2vw, 1.8rem);
     padding-top: clamp(0.5rem, 2vw, 2rem);
 }
 .essay__note {
-    /* the flag is centred on the eyebrow's first line box, so both the line
-       height and the note's top padding have to be readable from here */
     --flag-size: 24px;
     --crit-line: 1.1rem;
     --note-pad-top: 0.2rem;
@@ -213,4 +205,3 @@
         transition: none;
     }
 }
-

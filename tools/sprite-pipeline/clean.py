@@ -16,7 +16,6 @@ os.makedirs(OUT, exist_ok=True)
 os.makedirs(PREV, exist_ok=True)
 
 SHEETS = [
-    # (source, slug, mode)
     ("parade-checkered/ChatGPT Image Jul 6, 2026, 07_32_22 PM.png", "oblomov", "checker"),
     ("parade-checkered/ChatGPT Image Jul 6, 2026, 08_35_56 PM.png", "katerina", "checker"),
     ("parade-checkered/ChatGPT Image Jul 6, 2026, 08_36_01 PM.png", "onegin", "checker"),
@@ -39,7 +38,7 @@ def quantize(colors, n):
     uniq, counts = np.unique(colors.reshape(-1, 3), axis=0, return_counts=True)
     boxes = [(uniq, counts)]
     while len(boxes) < n:
-        # split the box with the largest weighted spread
+        # Split the box with the largest weighted spread.
         best, bi = -1, -1
         for i, (u, c) in enumerate(boxes):
             if len(u) < 2:
@@ -73,7 +72,7 @@ for src, slug, mode in SHEETS:
 
     if mode == "green":
         bg = (g - np.maximum(r, b)) >= 40
-        # boundary ring: strong green-cream blends hugging the keyed area
+        # Include green-cream boundary pixels around the keyed area.
         ring = ndimage.binary_dilation(bg, iterations=3) & ((2 * g - r - b) > 60)
         bg |= ring
     else:
@@ -83,17 +82,17 @@ for src, slug, mode in SHEETS:
             lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
         border_ids = border_ids[border_ids != 0]
         bg = np.isin(lab, border_ids)
-        # absorb near-neutral halo pixels touching bg (1 dilation step)
+        # Include adjacent neutral halo pixels.
         halo = ndimage.binary_dilation(bg) & ((rgb.max(-1) - rgb.min(-1)) <= 20) & ~bg
         bg |= halo
 
     keep = ~bg
 
-    if mode == "green":  # despill: cream/amber tones never have g as the max channel
+    if mode == "green":
         spill = keep & (g > np.maximum(r, b))
         rgb[..., 1] = np.where(spill, np.maximum(r, b), g)
 
-    # palette from confident interior pixels only (well away from bg)
+    # Build the palette away from the keyed boundary.
     interior = keep & ~ndimage.binary_dilation(bg, iterations=2)
     src_px = rgb[interior] if interior.sum() > 500 else rgb[keep]
     pal = quantize(src_px, 10)
@@ -102,11 +101,9 @@ for src, slug, mode in SHEETS:
     out = np.dstack([rgb.astype(np.uint8), np.where(keep, 255, 0).astype(np.uint8)])
     Image.fromarray(out, "RGBA").save(os.path.join(OUT, f"{slug}.png"))
 
-    # dark composite preview
     comp = np.where(keep[..., None], rgb, DARK).astype(np.uint8)
     Image.fromarray(comp, "RGB").save(os.path.join(PREV, f"{slug}.png"))
 
-    # invariants
     kept = rgb[keep]
     green_dom = int((kept[:, 1] > np.maximum(kept[:, 0], kept[:, 2])).sum())
     neutral_light = int((((kept.max(1) - kept.min(1)) < 8) & (kept.mean(1) > 200)).sum())
@@ -119,7 +116,6 @@ for src, slug, mode in SHEETS:
     }
     print(slug, json.dumps(report[slug]))
 
-# hard checks
 bad = {k: v for k, v in report.items() if v["green_dominant_left"] > 0}
 assert not bad, f"green spill survived: {bad}"
 print("ALL CLEAN")

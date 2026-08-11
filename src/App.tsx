@@ -18,8 +18,7 @@ gsap.registerPlugin(ScrollTrigger);
 export function App() {
   const bar = useRef<HTMLDivElement>(null);
 
-  /* Lenis smooth scroll, driven by the GSAP ticker so ScrollTrigger and the
-     scroll position never disagree. Skipped for reduced motion. */
+  // Drive Lenis from GSAP so ScrollTrigger sees the same scroll position.
   useLayoutEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ lerp: 0.115 });
@@ -28,20 +27,10 @@ export function App() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
-    // Anchor scrolling, handled here instead of by Lenis's built-in anchors so
-    // #program can target something Lenis can't express: the Program section
-    // pins its panel viewport and scrolls it horizontally, so "the top of the
-    // section" is NOT where horizontal scrolling begins. That point is the pin's
-    // ScrollTrigger.start — the single source of truth — so we jump straight to
-    // it. Everything else clears the sticky nav via scroll-padding-top, so the
-    // pin (which uses the same value) and these jumps can never drift apart, on
-    // any screen size. Without this, a direct load of /#program does a native
-    // hash jump to the section top and lands short of / past the pin.
+    // #program starts at its horizontal pin, not at the section boundary.
     const pad =
       parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 90;
-    // Always resolve to an absolute pixel target: the pin's start when jumping to
-    // #program, otherwise the element's top minus the nav clearance. A concrete
-    // number avoids Lenis re-resolving an element mid-load (which lands short).
+    // Resolve before scrolling; Lenis can misplace an element target while layout settles.
     const destination = (id: string): number | null => {
       const st = ScrollTrigger.getById("program-h");
       if (id === "program" && st) return st.start;
@@ -67,9 +56,7 @@ export function App() {
     };
     document.addEventListener("click", onClick);
 
-    // ScrollTrigger.start is only trustworthy after layout settles; refresh once
-    // fonts land, then honor any hash the page was loaded with (the URL the user
-    // actually opens is /#program) by snapping to the now-correct start.
+    // ScrollTrigger.start is valid only after fonts and layout settle.
     const settle = () => {
       ScrollTrigger.refresh();
       const id = location.hash.slice(1);
@@ -85,7 +72,6 @@ export function App() {
     };
   }, []);
 
-  // reveal-on-scroll: fade sections in as they enter the viewport
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => {
@@ -102,8 +88,6 @@ export function App() {
     return () => io.disconnect();
   }, []);
 
-  /* depth parallax: any [data-depth] image drifts vertically while its parent
-     section crosses the viewport — cheap fake 3D for the background art */
   useLayoutEffect(() => {
     const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: no-preference)", () => {
@@ -121,13 +105,12 @@ export function App() {
         });
       });
     });
-    // image heights settle after load — recompute trigger positions
+    // Images can change trigger positions after loading.
     const onLoad = () => ScrollTrigger.refresh();
     window.addEventListener("load", onLoad);
     return () => { window.removeEventListener("load", onLoad); mm.revert(); };
   }, []);
 
-  // top progress bar
   useEffect(() => {
     const el = bar.current;
     if (!el) return;

@@ -1,6 +1,3 @@
-/* ---------- Custom cursor ---------- */
-/* the native pointer disappears everywhere except text fields, where the
-   custom sprite hides itself and the caret cursor takes over */
 .cc-on {
     cursor: none !important;
 }
@@ -45,8 +42,7 @@
 .cursor__holder img {
     position: absolute;
     display: block;
-    max-width: none; /* the global img reset caps width at the
-                                    holder's zero width — undo it here */
+    max-width: none; /* Override the global img reset. */
     opacity: 0;
     user-select: none;
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));

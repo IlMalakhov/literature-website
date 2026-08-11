@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { FAQ_STUDENT, FAQ_PARENT, TG_QUESTION_URL } from "../data";
 
-/* «Вопросы»: the objections parents or students raise before booking, answered.
-   Accordion opens via grid-template-rows 0fr→1fr — no height measuring,
-   buttery on any content length. One question open at a time. */
 export function Faq() {
   const [audience, setAudience] = useState<"student" | "parent">("student");
   const [open, setOpen] = useState<number>(-1);
@@ -83,4 +80,3 @@ export function Faq() {
     </section>
   );
 }
-

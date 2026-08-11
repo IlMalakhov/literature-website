@@ -1,4 +1,3 @@
-/* ---------- Layout ---------- */
 .wrap {
     width: 100%;
     max-width: var(--maxw);
@@ -22,4 +21,3 @@ header.hero {
     font-size: var(--h-lg);
     margin-top: 1rem;
 }
-

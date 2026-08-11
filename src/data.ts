@@ -1,21 +1,12 @@
-/* Content + booking link for the «Тёмный кабинет» page. */
-
-/* --- Booking action: open Telegram chat with a pre-filled message --------
-   Telegram only pre-fills the "?text=" draft for USERNAME links
-   (https://t.me/<username>?text=…). Phone-number links just open the chat and
-   ignore the text param — so the username is what enables the prefill; the
-   phone number is a fallback only. Docs: https://core.telegram.org/api/links */
-const TG_USERNAME = "dashavrodeda"; // no @. Username link is what enables prefill.
-const TG_PHONE = "79215791929"; // fallback only — Telegram won't prefill text here
+// Telegram prefills text only for username links: https://core.telegram.org/api/links
+const TG_USERNAME = "dashavrodeda";
+const TG_PHONE = "79215791929"; // Phone fallback; does not support prefilling.
 
 export const TG_HANDLE = `@${TG_USERNAME}`;
 
-/* The draft message: three personal gaps, filled in the CTA composer.
-   Empty gaps fall back to «…» so the message stays valid untouched. */
 export type TgDraft = { grade: string; prep: string; time: string };
 
-/* NB: field is deliberately not named `key` — that would be swallowed by
-   React when a gap config is spread into JSX props */
+// Do not rename `field` to `key`; React strips `key` from spread props.
 export const TG_GAPS: ReadonlyArray<{
   field: keyof TgDraft; label: string; placeholder: string;
 }> = [
@@ -38,21 +29,17 @@ export const tgUrl = (text: string) =>
     ? `https://t.me/${TG_USERNAME}?text=${encodeURIComponent(text)}`
     : `https://t.me/+${TG_PHONE}`;
 
-/* FAQ «остался свой вопрос» link: an open-ended draft instead of the booking one */
 export const TG_QUESTION_URL = tgUrl(
   "Здравствуйте, Дарья, у меня есть вопрос по поводу занятий: ",
 );
 
-/* Footer contact line: just open the chat, no draft */
 export const TG_PLAIN_URL = TG_USERNAME
   ? `https://t.me/${TG_USERNAME}`
   : `https://t.me/+${TG_PHONE}`;
 
-/* Ends with U+00A0: SVG trims a normal trailing space, which would glue the
-   last dot to ПОДГОТОВКА where the ring text wraps around. */
+// The trailing NBSP preserves spacing where the SVG text wraps.
 export const BADGE_TEXT = "ПОДГОТОВКА К ЕГЭ · ЛИТЕРАТУРА · ";
 
-/* --- The codifier library: one still-life per work, /works/<slug>.webp ---- */
 export type Work = {
   slug: string;
   title: string;
@@ -101,7 +88,6 @@ export const MARQUEE_TAGS: ReadonlyArray<string> = [
   "теория литературы", "банк аргументов", "бюджет",
 ];
 
-/* средний балл: цифрой в бенто (Bento) и отметкой на шкале отзывов (QuotesScale) */
 export const AVG_SCORE = 84;
 
 export const QUOTES: ReadonlyArray<{
@@ -121,10 +107,7 @@ export const QUOTES: ReadonlyArray<{
   },
 ];
 
-/* --- ЗАГЛУШКИ для сферы отзывов --------------------------------------------
-   TODO: заменить реальными отзывами (текст, имя, роль, балл).
-   Формат идентичен QUOTES — просто перенесите настоящие тексты сюда
-   или прямо в QUOTES, сфера рендерит оба массива подряд. ------------------- */
+// TODO: Replace with real reviews. QuotesScale combines this with QUOTES.
 export const QUOTES_FILLER: ReadonlyArray<{
   text: string; who: string; role: string; score: string;
 }> = [
@@ -198,7 +181,6 @@ export const QUOTES_FILLER: ReadonlyArray<{
   },
 ];
 
-/* --- «Разбор сочинения»: margin notes keyed to marked spans in the paper --- */
 export const ESSAY_NOTES: ReadonlyArray<{
   n: number; crit: string; title: string; text: string;
 }> = [
@@ -216,16 +198,11 @@ export const ESSAY_NOTES: ReadonlyArray<{
   },
 ];
 
-/* --- «Маршрут года»: September → June, one step at a time ---------------- */
-
-/* A month leaf pinned to a step. Only some steps carry one — they punctuate
-   the thread rather than annotate every stop, so adding/removing a calendar
-   is an edit here, not in the component. */
 export type RoadCal = {
   y: number;
-  m: number; // 1-indexed, human-readable
-  keys?: number[]; // the milestone itself — filled rose bead
-  soft?: number[]; // a repeating rhythm — hairline ring only
+  m: number; // 1-indexed month
+  keys?: number[]; // filled markers
+  soft?: number[]; // outlined markers
   note: string;
 };
 
@@ -266,7 +243,6 @@ export const ROAD_STEPS: ReadonlyArray<{
   },
 ];
 
-/* --- FAQ: the questions parents and students actually ask before booking -- */
 export const FAQ_STUDENT: ReadonlyArray<{ q: string; a: string }> = [
   {
     q: "С какого уровня можно начинать?",
@@ -314,10 +290,7 @@ export const FAQ_PARENT: ReadonlyArray<{ q: string; a: string }> = [
 ];
 
 
-/* Parade choreography: [figure, message, enter-duration, exit-duration].
-   Pixel-sprite cast, one pass each per loop: the carriage rolls, Onegin
-   struts, Raskolnikov hurries, Oblomov shuffles, Katerina glides,
-   Behemoth swaggers. */
+// [figure, message, enter duration, exit duration]
 export type FigureKey =
   | "carriage" | "onegin" | "rask" | "oblomov" | "katerina" | "behemoth";
 export const SEGMENTS: ReadonlyArray<

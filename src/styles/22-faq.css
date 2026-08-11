@@ -1,4 +1,3 @@
-/* ---------- FAQ: objections, answered ---------- */
 .faq__toggle-row {
     display: flex;
     justify-content: flex-end;
@@ -127,7 +126,6 @@
 .faq__item.open .faq__icon {
     transform: rotate(45deg);
 }
-/* grid-rows accordion: no JS height measuring */
 .faq__a {
     display: grid;
     grid-template-rows: 0fr;
@@ -171,4 +169,3 @@
         transition: none;
     }
 }
-

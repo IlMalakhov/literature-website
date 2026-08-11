@@ -67,7 +67,7 @@ def split_frames(alpha, n):
     cols = alpha.any(axis=0)
     xs = np.where(cols)[0]
     lo, hi = xs.min(), xs.max()
-    # interior gaps: runs of empty columns between lo..hi
+    # Find empty column runs inside the occupied bounds.
     gaps, start = [], None
     for x in range(lo, hi + 1):
         if not cols[x]:
@@ -130,8 +130,7 @@ def pack(slug, sheet, n, anchor_mode):
 
 report = {}
 sheets = list(ANIMATED.items()) + [(s, None) for s in STATIC + ["windows"]]
-# display-density overrides: animated art must only ever be UPscaled on screen,
-# and screen-space chunk size should be coherent across figures
+# Keep animated sprites at or above native resolution on screen.
 OVERRIDE = {"onegin": 5, "carriage": 2, "seagull": 7, "mist": 1}
 for slug, anim in sheets:
     rgba = load(slug)
@@ -141,7 +140,7 @@ for slug, anim in sheets:
     s = OVERRIDE.get(slug, max(ok) if ok else 2)
     palette = np.unique(rgba[rgba[..., 3] == 255][:, :3], axis=0).astype(np.int16)
     native = downsample(rgba, s, palette)
-    if slug == "mist":  # unify to site cream, single-tone dither by design
+    if slug == "mist":
         native[..., :3][native[..., 3] > 0] = CREAM
     Image.fromarray(native, "RGBA").save(os.path.join(NATIVE, f"{slug}.png"))
     entry = {"scale": s, "err": round(errs.get(s, 0.0), 2),
